@@ -1,9 +1,9 @@
 {
-  "id": "/GeoPhoto_Editor.html",
+  "id": "/index.html",
   "name": "GeoPhoto Editor",
   "short_name": "GeoPhoto",
   "description": "Éditeur de géolocalisation et date pour photos",
-  "start_url": "./GeoPhoto_Editor.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4a90e2",
