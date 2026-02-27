@@ -1,0 +1,47 @@
+{
+  "id": "/index.html",
+  "name": "GeoPhoto Editor",
+  "short_name": "GeoPhoto",
+  "description": "Éditeur de géolocalisation et date pour photos",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "icone_geophoto.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "capture_bureau1.jpg",
+      "sizes": "1920x1080",
+      "type": "image/jpeg",
+      "form_factor": "wide"
+    },
+    {
+      "src": "capture_bureau2.jpg",
+      "sizes": "1920x1080",
+      "type": "image/jpeg",
+      "form_factor": "wide"
+    },
+	{
+      "src": "capture_mobile1.png",
+      "sizes": "1080x1920",
+      "type": "image/png"
+    },
+	{
+      "src": "capture_mobile2.png",
+      "sizes": "1080x1920",
+      "type": "image/png"
+    },
+	{
+      "src": "capture_mobile3.png",
+      "sizes": "1080x1920",
+      "type": "image/png"
+    }
+  ]
+}
