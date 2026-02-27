@@ -1,4 +1,4 @@
-const CACHE_NAME = 'geophoto-v7';
+const CACHE_NAME = 'geophoto-v8';
 const urlsToCache = [
   './',
   './index.html',
@@ -39,5 +39,26 @@ self.addEventListener('fetch', event => {
 
 });
 
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Ancien cache supprimé:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => {
+      // Force le nouveau Service Worker à prendre le contrôle immédiatement
+      return self.clients.claim();
+    })
+  );
+});
 
-
+// Facultatif : forcer le SW à s'installer immédiatement sans attendre que l'ancien libère la page
+self.addEventListener('install', event => {
+  self.skipWaiting();
+  // ... le reste de votre code d'installation (addAll) existant va au-dessus de ça
+});
