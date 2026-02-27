@@ -1,0 +1,7 @@
+# Fichiers générés par l'installateur InnoSetup
+Output/
+*.exe
+
+# Fichiers optionnels / ignorés
+.DS_Store
+Thumbs.db
