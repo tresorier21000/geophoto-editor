@@ -7,14 +7,18 @@
 À l'ouverture, l'application vous propose deux méthodes de travail :
 
 ### 🌟 Mode 1 : Traitement d'une seule image (JPEG)
+> [!IMPORTANT]
+> Le Mode 1 (image unique) reste totalement multiplateforme.
+
 Idéal pour une modification rapide et visuelle d'une seule photo.
-*   **Visualisation immédiate :** La carte interactive se centre automatiquement sur les coordonnées GPS existantes.
-*   **Modification Intuitive :** Modifiez la position d'un simple clic sur la carte, via la barre de recherche, ou utilisez votre géolocalisation actuelle.
-*   **Confidentialité totale :** Le traitement s'effectue intégralement en local dans votre navigateur.
+👉 **Visualisation immédiate :** La carte interactive se centre automatiquement sur les coordonnées GPS existantes.
+👉 **Modification Intuitive :** Modifiez la position d'un simple clic sur la carte, via la barre de recherche, ou utilisez votre géolocalisation actuelle.
+👉 **Confidentialité totale :** Le traitement s'effectue intégralement en local dans votre navigateur.
+
 
 ### 🌟 Mode 2 : Traitement par Lot (Dossier complet, Tous formats RAW/JPEG/PNG)
 > [!IMPORTANT]
-> **Fonctionnalité exclusive à Windows :** Le mode par lot génère des scripts d'automatisation système spécifiques (`.bat`) qui ne peuvent s'exécuter que sur un environnement Microsoft Windows. Le Mode 1 (image unique) reste totalement multiplateforme.
+> **Fonctionnalité exclusive à Windows :** Le mode par lot génère des scripts d'automatisation système spécifiques (`.bat`) qui ne peuvent s'exécuter que sur un environnement Microsoft Windows.
 Conçu pour traiter des centaines de photos d'un retour de voyage. Ce mode génère à la demande des fichiers de commandes (.bat) sécurisés pilotant le célèbre moteur **ExifTool**. Il est architecturé en 3 Onglets :
 
 👉 **Onglet 1 : MÉTADONNÉES**
