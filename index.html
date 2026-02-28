@@ -33,7 +33,11 @@
     <header style="position: relative;">
       <div class="header-titles">
         <h1>GeoPhoto Editor</h1>
-        <p class="subtitle" style="max-width: 800px;">Modifiez facilement les EXIFs (GPS, date) de vos images JPEG</p>
+        <p class="subtitle" style="max-width: 650px; text-wrap: balance; margin: 0 auto; line-height: 1.6;">
+          Modifiez les métadonnées (GPS, Date), Organisez, Renommez et Nettoyez vos photos.<br>
+          <span style="font-size: 0.9em; opacity: 0.9;">Image par image (JPEG) ou par dossier entier (RAW, JPEG,
+            PNG...)</span>
+        </p>
       </div>
       <button onclick="openHelp()" class="btn-help" aria-label="Ouvrir le manuel d'aide" title="Aide et Instructions">
         <span style="font-size: 1.4rem; font-weight: 800; font-family: sans-serif;">?</span>
@@ -41,149 +45,573 @@
     </header>
 
     <main class="main-card">
-      <div class="upload-area" id="dropZone" tabindex="0" role="button"
-        aria-label="Zone de dépôt ou de sélection d'image">
-        <div class="upload-icon">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="17 8 12 3 7 8"></polyline>
-            <line x1="12" y1="3" x2="12" y2="15"></line>
-          </svg>
-        </div>
-        <div>
-          <p class="upload-text">Glissez-déposez une image ici</p>
-          <p class="upload-subtext">ou cliquez pour choisir un fichier JPEG</p>
-        </div>
-        <input type="file" id="imageInput" accept="image/jpeg" style="display:none;" aria-hidden="true">
-      </div>
+      <!-- ÉCRAN DE CHOIX (V2) -->
+      <div id="modeChoiceSection" class="mode-choice" style="padding: 2rem 0;">
+        <h2 style="text-align: center; margin-bottom: 2.5rem; font-size: 1.5rem; color: var(--text);">Que souhaitez-vous
+          faire ?</h2>
+        <div class="mode-cards"
+          style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
 
-      <div id="error-message" class="alert error" style="display: none;" role="alert">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="12" y1="8" x2="12" y2="12"></line>
-          <line x1="12" y1="16" x2="12.01" y2="16"></line>
-        </svg>
-        <span id="error-text">L’image ne contient pas de coordonnées GPS. Cliquez sur la carte pour en définir.</span>
-      </div>
-
-      <div class="content-grid" id="contentSection" style="display: none;">
-        <div class="layout-row row-top">
-          <div class="image-wrapper">
-            <div class="image-container">
-              <img id="preview" src="" alt="Aperçu de l'image sélectionnée">
-            </div>
-            <div class="filename-edit">
-              <input type="text" id="filenameInput" aria-label="Nom du fichier" placeholder="Nom du fichier">
-              <span class="extension">.jpg</span>
-            </div>
-          </div>
-
-          <div class="exif-card" id="exifSection" style="display: none;">
-            <div class="section-header">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          <button class="mode-card" onclick="selectMode('single')"
+            style="background: var(--surface-light); border: 2px solid var(--border); border-radius: 12px; padding: 2.5rem 1.5rem; cursor: pointer; transition: all 0.2s ease; text-align: center; color: var(--text); display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+            <div
+              style="background: rgba(59, 130, 246, 0.1); padding: 1rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                <polyline points="21 15 16 10 5 21"></polyline>
               </svg>
-              <h3>Informations Photo (EXIF)</h3>
             </div>
+            <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0;">Traiter une photo JPEG</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0; line-height: 1.5;">Modifier la date ou le
+              GPS d'une seule image avec visualisation carte.</p>
+          </button>
 
-            <div class="exif-grid" id="exifDataGrid">
+          <button class="mode-card" onclick="selectMode('batch')"
+            style="background: var(--surface-light); border: 2px solid var(--border); border-radius: 12px; padding: 2.5rem 1.5rem; cursor: pointer; transition: all 0.2s ease; text-align: center; color: var(--text); display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+            <div
+              style="background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #10b981;">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                <line x1="12" y1="11" x2="12" y2="17"></line>
+                <line x1="9" y1="14" x2="15" y2="14"></line>
+              </svg>
             </div>
+            <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0;">Traiter un dossier (Lot)</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin: 0; line-height: 1.5;">Appliquer des
+              métadonnées à des centaines de photos (tous formats) via ExifTool.</p>
+          </button>
 
-            <div class="input-group" style="margin-top: 1rem;">
-              <label for="datetimeBtn">Date et Heure de Prise de Vue</label>
-              <div class="input-wrapper">
-                <input type="datetime-local" id="datetimeInput" step="1">
-              </div>
-            </div>
+        </div>
+      </div>
+
+      <!-- MODE 1 : IMAGE UNIQUE (CLASSIQUE) -->
+      <div id="singleModeSection" style="display: none;">
+
+        <button onclick="goBackToChoice()" class="btn-secondary"
+          style="margin-bottom: 1.5rem; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; width: auto;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          Retour au choix
+        </button>
+
+        <div class="upload-area" id="dropZone" tabindex="0" role="button"
+          aria-label="Zone de dépôt ou de sélection d'image">
+          <div class="upload-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
           </div>
+          <div>
+            <p class="upload-text">Glissez-déposez une image ici</p>
+            <p class="upload-subtext">ou cliquez pour choisir un fichier JPEG</p>
+          </div>
+          <input type="file" id="imageInput" accept="image/jpeg" style="display:none;" aria-hidden="true">
         </div>
 
-        <div class="layout-row row-bottom">
-          <div class="map-container" aria-label="Carte interactive pour sélectionner la position">
-            <div id="map"></div>
+        <div id="error-message" class="alert error" style="display: none;" role="alert">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span id="error-text">L’image ne contient pas de coordonnées GPS. Cliquez sur la carte pour en définir.</span>
+        </div>
+
+        <div class="content-grid" id="contentSection" style="display: none;">
+          <div class="layout-row row-top">
+            <div class="image-wrapper">
+              <div class="image-container">
+                <img id="preview" src="" alt="Aperçu de l'image sélectionnée">
+              </div>
+              <div class="filename-edit">
+                <input type="text" id="filenameInput" aria-label="Nom du fichier" placeholder="Nom du fichier">
+                <span class="extension">.jpg</span>
+              </div>
+            </div>
+
+            <div class="exif-card" id="exifSection" style="display: none;">
+              <div class="section-header">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+                <h3>Informations Photo (EXIF)</h3>
+              </div>
+
+              <div class="exif-grid" id="exifDataGrid">
+              </div>
+
+              <div class="input-group" style="margin-top: 1rem;">
+                <label for="datetimeBtn">Date et Heure de Prise de Vue
+                  <span class="help-icon"
+                    onclick="event.preventDefault(); showToast('Modifiez cette date pour corriger l\'heure d\'enregistrement de la photo. Utile pour trier chronologiquement vos souvenirs.', 'info');"
+                    title="Plus d'informations">?</span>
+                </label>
+                <div class="input-wrapper">
+                  <input type="datetime-local" id="datetimeInput" step="1">
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="coords-card">
-            <div class="input-group">
-              <label for="lat">Latitude (°)</label>
-              <div class="input-wrapper">
-                <input type="number" step="any" id="lat" readonly placeholder="Cliquez sur la carte"
-                  aria-label="Latitude">
-              </div>
-            </div>
-            <div class="input-group">
-              <label for="lng">Longitude (°)</label>
-              <div class="input-wrapper">
-                <input type="number" step="any" id="lng" readonly placeholder="Cliquez sur la carte"
-                  aria-label="Longitude">
-              </div>
+          <div class="layout-row row-bottom">
+            <div class="map-container" aria-label="Carte interactive pour sélectionner la position">
+              <div id="map"></div>
             </div>
 
-            <div class="input-group" style="margin-top: 0.5rem;">
-              <label for="searchLocation">Rechercher un lieu dans le monde</label>
-              <div class="input-wrapper" style="display: flex; gap: 0.5rem;">
-                <input type="text" id="searchLocation" placeholder="Ex: Paris, Tokyo, New York..."
-                  aria-label="Rechercher un lieu">
-                <button class="btn-secondary" onclick="searchCity()" type="button"
-                  style="padding: 0.5rem 1rem; width: auto;" title="Rechercher sur la carte">
+            <div class="coords-card">
+              <div class="input-group">
+                <label for="lat">Latitude (°)</label>
+                <div class="input-wrapper">
+                  <input type="number" step="any" id="lat" readonly placeholder="Cliquez sur la carte"
+                    aria-label="Latitude">
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="lng">Longitude (°)</label>
+                <div class="input-wrapper">
+                  <input type="number" step="any" id="lng" readonly placeholder="Cliquez sur la carte"
+                    aria-label="Longitude">
+                </div>
+              </div>
+
+              <div class="input-group" style="margin-top: 0.5rem;">
+                <label for="searchLocation">Rechercher un lieu dans le monde</label>
+                <div class="input-wrapper" style="display: flex; gap: 0.5rem;">
+                  <input type="text" id="searchLocation" placeholder="Ex: Paris, Tokyo, New York..."
+                    aria-label="Rechercher un lieu">
+                  <button class="btn-secondary" onclick="searchCity()" type="button"
+                    style="padding: 0.5rem 1rem; width: auto;" title="Rechercher sur la carte">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="actions" style="margin-top: 1.5rem;">
+                <button class="btn-secondary" onclick="getCurrentLocation()" type="button">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                     stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
                   </svg>
+                  Utiliser ma position précise
+                </button>
+                <button class="btn-primary" onclick="updateGPS()" type="button">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                  </svg>
+                  Mettre à jour & Télécharger
+                </button>
+
+                <div class="separator"
+                  style="display: flex; align-items: center; margin: 0.5rem 0; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">
+                  <span style="flex: 1; height: 1px; background: var(--border);"></span>
+                  <span style="margin: 0 10px;">Confidentialité</span>
+                  <span style="flex: 1; height: 1px; background: var(--border);"></span>
+                </div>
+
+                <button class="btn-danger" onclick="removeGPS()" type="button"
+                  title="Supprimer toute donnée de géolocalisation de l'image pour la sécuriser">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    <line x1="9" y1="12" x2="15" y2="12"></line>
+                  </svg>
+                  Sécuriser (Supprimer GPS)
+                  <span class="help-icon"
+                    onclick="event.stopPropagation(); showToast('Efface toutes les données de localisation de cette image pour garantir votre anonymat et sécurité avant de la publier.', 'info');"
+                    title="Plus d'informations">?</span>
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      </div> <!-- Fin singleModeSection -->
 
-            <div class="actions" style="margin-top: 1.5rem;">
-              <button class="btn-secondary" onclick="getCurrentLocation()" type="button">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
-                </svg>
-                Utiliser ma position précise
-              </button>
-              <button class="btn-primary" onclick="updateGPS()" type="button">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                  <polyline points="7 3 7 8 15 8"></polyline>
-                </svg>
-                Mettre à jour & Télécharger
-              </button>
+      <!-- MODE 2 : TRAITEMENT PAR DOSSIER (LOT) -->
+      <div id="batchModeSection" style="display: none;">
+        <button onclick="goBackToChoice()" class="btn-secondary"
+          style="margin-bottom: 1.5rem; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; width: auto;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          Retour au choix
+        </button>
 
-              <div class="separator"
-                style="display: flex; align-items: center; margin: 0.5rem 0; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;">
-                <span style="flex: 1; height: 1px; background: var(--border);"></span>
-                <span style="margin: 0 10px;">Confidentialité</span>
-                <span style="flex: 1; height: 1px; background: var(--border);"></span>
+        <div
+          style="background-color: rgba(16, 185, 129, 0.1); border-left: 4px solid #10b981; padding: 16px; margin-bottom: 24px; border-radius: 4px; color: var(--text);">
+          <h3 style="margin-top: 0; color: #10b981; display: flex; align-items: center; gap: 8px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <line x1="10" y1="9" x2="8" y2="9"></line>
+            </svg>
+            Comment fonctionne le traitement par Lot ?
+          </h3>
+          <p style="margin-bottom: 8px; font-size: 0.95rem; line-height: 1.5;">Ce mode de traitement massif ne modifie
+            pas les images dans votre navigateur (ce serait trop lent). Il fonctionne comme une télécommande :</p>
+          <ol
+            style="margin-bottom: 0; padding-left: 20px; font-size: 0.9rem; line-height: 1.6; color: var(--text-muted);">
+            <li>Réglez la Date/Heure et/ou le GPS ci-dessous.</li>
+            <li>Cliquez sur "Générer le script (.bat)".</li>
+            <li>Double-cliquez sur le script pour l'exécuter. Votre PC va utiliser le moteur <strong>ExifTool</strong>
+              (installé en coulisses avec cette application) pour traiter le dossier sélectionné instantanément !</li>
+          </ol>
+        </div>
+
+        <div class="exif-card">
+          <h3
+            style="margin-bottom: 1.5rem; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem;">
+            Configuration du traitement</h3>
+
+          <!-- Nouvelle Sécurité : Choix du Dossier Cible -->
+          <div
+            style="margin-bottom: 2rem; padding: 1rem; background: rgba(59, 130, 246, 0.05); border-left: 4px solid var(--primary); border-radius: 4px;">
+            <label
+              style="display: flex; align-items: center; font-weight: 600; color: var(--text); margin-bottom: 8px;">
+              1. Sélectionner le dossier cible (Sécurité)
+              <span class="help-icon" style="margin-left: 10px;"
+                onclick="event.preventDefault(); showToast('Le système requiert cette étape manuelle pour s\'assurer qu\'il travaille exactement dans le bon dossier de votre ordinateur et empêcher toute modification accidentelle d\'autres fichiers.', 'warning');"
+                title="Pourquoi copier ce chemin ?">?</span>
+            </label>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">Pour éviter
+              les alertes de sécurité du navigateur, <strong>allez dans votre dossier Windows</strong>, copiez son
+              chemin en haut de la fenêtre (Ex: <code>C:\Mes Photos</code>), et <strong>collez-le ici :</strong></p>
+
+            <div style="display: flex; gap: 10px; align-items: stretch; flex-direction: column;">
+              <input type="text" id="batchFolderTextInput"
+                placeholder="Collez le chemin ici (ex: C:\Users\Nom\Images\Vacances)"
+                style="flex: 1; padding: 0.75rem; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); color: var(--text); font-family: monospace; font-size: 0.95rem;">
+
+              <div style="display: flex; gap: 10px; align-items: center; justify-content: space-between;">
+                <button class="btn-secondary" onclick="validateManualFolder()" type="button"
+                  style="width: auto; padding: 0.5rem 1rem;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                  Valider le chemin
+                </button>
+                <span id="batchFolderNameDisplay"
+                  style="font-size: 0.95rem; color: var(--text); font-weight: 500;">Aucun dossier validé</span>
               </div>
 
-              <button class="btn-danger" onclick="removeGPS()" type="button"
-                title="Supprimer toute donnée de géolocalisation de l'image pour la sécuriser">
+              <input type="hidden" id="batchFolderNameHidden" value="">
+            </div>
+          </div>
+
+          <!-- NAVIGATION PAR ONGLETS -->
+          <div class="tabs-container">
+            <button class="tab-btn active" onclick="switchBatchTab('tabMetadata')">✏️ Métadonnées</button>
+            <button class="tab-btn" onclick="switchBatchTab('tabOrganize')">📁 Organisation</button>
+            <button class="tab-btn" onclick="switchBatchTab('tabUtils')">🛠️ Utilitaires</button>
+          </div>
+
+          <!-- ONGLET 1 : MÉTADONNÉES -->
+          <div id="tabMetadata" class="tab-content active">
+            <p style="font-weight: 600; font-size: 1.05rem; color: var(--text); margin-bottom: 1rem;">Modification des
+              métadonnées</p>
+
+            <!-- Modification DATE -->
+            <div style="margin-bottom: 2rem;">
+              <label
+                style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 1.1rem; color: var(--text); font-weight: 500;">
+                <input type="checkbox" id="batchCheckDate" onchange="toggleBatchSection('Date')"
+                  style="width: 20px; height: 20px;">
+                Modifier la Date et l'Heure
+                <span class="help-icon"
+                  onclick="event.preventDefault(); showToast('Toutes les photos du dossier recevront exactement cette même date de prise de vue. Très utile si votre appareil photo n\'était pas à l\'heure de la bonne année, ou n\'avait plus de pile !', 'info');"
+                  title="Plus d'informations">?</span>
+              </label>
+              <div id="batchDateContainer"
+                style="display: none; margin-top: 1rem; padding-left: 30px; border-left: 2px solid var(--border); margin-left: 10px;">
+                <div class="input-group">
+                  <label for="batchDatetimeInput">Nouvelle Date/Heure à appliquer au lot</label>
+                  <div class="input-wrapper">
+                    <input type="datetime-local" id="batchDatetimeInput" step="1">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modification GPS -->
+            <div style="margin-bottom: 2rem;">
+              <label
+                style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 1.1rem; color: var(--text); font-weight: 500;">
+                <input type="checkbox" id="batchCheckGPS" onchange="toggleBatchSection('GPS')"
+                  style="width: 20px; height: 20px;">
+                Modifier les Coordonnées GPS
+                <span class="help-icon"
+                  onclick="event.preventDefault(); showToast('Toutes les photos du dossier seront géolocalisées au même endroit précis sur la carte de la Terre. Pratique si vous avez pris 50 photos non-GPS au même point de vue touristique.', 'info');"
+                  title="Plus d'informations">?</span>
+              </label>
+              <div id="batchGPSContainer"
+                style="display: none; margin-top: 1rem; padding-left: 30px; border-left: 2px solid var(--border); margin-left: 10px;">
+
+                <div class="input-group" style="margin-bottom: 1rem;">
+                  <label for="batchSearchLocation">Rechercher un lieu (Optionnel)</label>
+                  <div class="input-wrapper" style="display: flex; gap: 0.5rem;">
+                    <input type="text" id="batchSearchLocation" placeholder="Ex: Paris, Tokyo..."
+                      aria-label="Rechercher un lieu pour le lot">
+                    <button class="btn-secondary" onclick="searchCityBatch()" type="button"
+                      style="padding: 0.5rem 1rem; width: auto;" title="Rechercher sur la carte Lot">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Carte Leaflet du Mode Batch -->
+                <div id="batchMap"
+                  style="height: 300px; width: 100%; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 1rem; z-index: 1;">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                  <div class="input-group">
+                    <label>Latitude (°)</label>
+                    <input type="number" step="any" id="batchLat" readonly placeholder="Cliquez sur la carte"
+                      style="background: var(--surface); color: var(--text); border: 1px solid var(--border); padding: 0.75rem; border-radius: 6px; width: 100%; box-sizing: border-box;">
+                  </div>
+                  <div class="input-group">
+                    <label>Longitude (°)</label>
+                    <input type="number" step="any" id="batchLng" readonly placeholder="Cliquez sur la carte"
+                      style="background: var(--surface); color: var(--text); border: 1px solid var(--border); padding: 0.75rem; border-radius: 6px; width: 100%; box-sizing: border-box;">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Options de sauvegarde Méta -->
+            <div
+              style="margin-bottom: 2rem; padding: 1rem; background: var(--surface); border-radius: 8px; border: 1px solid var(--border);">
+              <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text);">
+                <input type="checkbox" id="batchKeepOriginals" checked style="width: 18px; height: 18px;">
+                <strong>Sécurité :</strong> Conserver les fichiers originaux in-changés (Recommandé)
+                <span class="help-icon"
+                  onclick="event.preventDefault(); showToast('Recommandé ! Ne détruit pas vos fichiers d\'origine, mais crée automatiquement de nouvelles copies modifiées terminant par \'_geophoto\'.', 'info');"
+                  title="Plus d'informations">?</span>
+              </label>
+              <p style="margin: 5px 0 0 28px; font-size: 0.85rem; color: var(--text-muted);">Si coché, l'outil va créer
+                de
+                nouvelles copies nommées <code>nomDuFichier_geophoto.jpg</code>. Vos photos originales ne seront jamais
+                écrasées. <br><strong style="color:var(--warning-text, #f59e0b);">⚠️ Attention :</strong> Assurez-vous
+                d'avoir suffisamment d'espace disque disponible sur votre support cible (Clé USB, Disque) avant de
+                dupliquer un très gros lot d'images.</p>
+            </div>
+
+            <button class="btn-primary" onclick="generateBatchScript()" type="button"
+              style="width: 100%; font-size: 1.1rem; padding: 1rem;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; vertical-align: bottom;">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Générer le script de Métadonnées (.bat)
+            </button>
+          </div>
+
+          <!-- ONGLET 2 : ORGANISATION -->
+          <div id="tabOrganize" class="tab-content">
+            <p style="font-weight: 600; font-size: 1.05rem; color: var(--text); margin-bottom: 1rem;">Renommage et
+              Classement automatiques</p>
+
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 2rem;">Ces actions se basent sur la
+              "Date de prise de vue" interne à chaque photo. Les fichiers sans date ne seront pas traités.</p>
+
+            <!-- Option Renommage -->
+            <div style="margin-bottom: 2rem; padding-left: 10px;">
+              <label
+                style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: var(--text); font-weight: 500;">
+                <input type="checkbox" id="orgCheckRename" style="width: 20px; height: 20px; margin-top: 2px;">
+                <div>
+                  Renommer les photos avec leur Date et Heure
+                  <span class="help-icon"
+                    onclick="event.preventDefault(); showToast('Toutes vos photos (ex: DSC_001.jpg) seront renommées de manière uniforme avec leur date de prise de vue interne (ex: 20261231_1.jpg). Le fichier généré contiendra le tag \'_renomme\'.', 'info');"
+                    title="Plus d'informations">?</span>
+                  <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 400; margin-top: 4px;">Ex:
+                    <code>20261231_1.jpg</code> (Si plusieurs photos à la même date, un numéro est ajouté)
+                  </div>
+                </div>
+              </label>
+            </div>
+
+            <!-- Option Classement -->
+            <div style="margin-bottom: 2rem; padding-left: 10px;">
+              <label
+                style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer; color: var(--text); font-weight: 500;">
+                <input type="checkbox" id="orgCheckClassify"
+                  onchange="document.getElementById('orgSubOptions').style.display = this.checked ? 'block' : 'none';"
+                  style="width: 20px; height: 20px; margin-top: 2px;">
+                <div>
+                  Classer les photos dans des sous-dossiers par date
+                  <span class="help-icon"
+                    onclick="event.preventDefault(); showToast('Lit la date de chaque photo et la déplace/copie automatiquement dans un nouveau dossier à son nom (ex: un dossier 2026, contenant un sous-dossier 12). Idéal pour ranger mille vracs de photos instantanément.', 'info');"
+                    title="Plus d'informations">?</span>
+                  <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 400; margin-top: 4px;">L'outil
+                    créera les dossiers automatiquement s'ils n'existent pas.</div>
+                </div>
+              </label>
+
+              <!-- Sous-options de classement -->
+              <div id="orgSubOptions"
+                style="display: none; margin-top: 1rem; padding-left: 30px; border-left: 2px solid var(--border); margin-left: 10px;">
+                <label
+                  style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text); margin-bottom: 10px;">
+                  <input type="checkbox" id="orgCheckYear" checked
+                    onchange="if(!this.checked) { document.getElementById('orgCheckMonth').checked = false; document.getElementById('orgCheckMonth').disabled = true; } else { document.getElementById('orgCheckMonth').disabled = false; }"
+                    style="width: 18px; height: 18px;">
+                  Créer un dossier par Année (Ex: /2026/)
+                </label>
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text);">
+                  <input type="checkbox" id="orgCheckMonth" style="width: 18px; height: 18px;">
+                  Créer un sous-dossier par Mois (Ex: /2026/12/)
+                </label>
+              </div>
+            </div>
+
+            <!-- Options de sauvegarde Organisation -->
+            <div
+              style="margin-bottom: 2rem; padding: 1rem; background: var(--surface); border-radius: 8px; border: 1px solid var(--border);">
+              <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text);">
+                <input type="checkbox" id="orgKeepOriginals" checked style="width: 18px; height: 18px;">
+                <strong>Sécurité :</strong> Conserver les fichiers originaux in-changés (Copie au lieu de
+                Déplacer/Renommer)
+                <span class="help-icon"
+                  onclick="event.preventDefault(); showToast('Si coché, vos photos d\'origine resteront en place et l\'outil créera des copies parfaitement rangées dans la nouvelle structure de dossiers. ⚠️ Attention : Prévoyez un espace disque équivalent au volume d\'origine pour stocker ces doubles.', 'info');"
+                  title="Plus d'informations">?</span>
+              </label>
+              <p style="margin: 5px 0 0 28px; font-size: 0.85rem; color: var(--text-muted);"><strong
+                  style="color:var(--warning-text, #f59e0b);">⚠️ Attention :</strong> Assurez-vous d'avoir suffisamment
+                d'espace disque disponible sur votre support cible (Clé USB, Disque) avant de dupliquer un très gros lot
+                d'images.</p>
+            </div>
+
+            <button class="btn-primary" onclick="generateOrganizeScript()" type="button"
+              style="width: 100%; font-size: 1.1rem; padding: 1rem; background-image: linear-gradient(135deg, #8b5cf6, #ec4899); border-color: transparent;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; vertical-align: bottom;">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+              </svg>
+              Générer le script d'Organisation (.bat)
+            </button>
+          </div>
+
+          <!-- ONGLET 3 : UTILITAIRES -->
+          <div id="tabUtils" class="tab-content">
+            <p style="font-weight: 600; font-size: 1.05rem; color: var(--text); margin-bottom: 1rem;">Outils de lecture
+              et de nettoyage</p>
+
+            <!-- Option d'Extraction CSV -->
+            <div
+              style="margin-bottom: 2rem; padding: 1rem; background: rgba(16, 185, 129, 0.05); border-left: 4px solid #10b981; border-radius: 4px;">
+              <label style="display: block; font-weight: 600; color: var(--text); margin-bottom: 8px;">Analyser les
+                métadonnées (Optionnel)
+                <span class="help-icon"
+                  onclick="event.preventDefault(); showToast('Génère un fichier de lecture (extraction) qui liste l\'intégralité du contenu interne de vos photos (marque de l\'appareil, focale, logiciel...). Ce tableau CSV est idéal si vous devez faire l\'inventaire d\'une très vaste archive.', 'info');"
+                  title="Plus d'informations">?</span>
+              </label>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">Générez un
+                fichier pour extraire dans un tableau CSV (lisible par Excel / Google Sheets) le nom, modèle,
+                dimensions,
+                date et GPS des photos. Cela n'affectera pas vos actions suivantes.</p>
+              <button class="btn-secondary" onclick="generateCSVExtractionScript()" type="button"
+                style="width: 100%; padding: 0.75rem; color: var(--text); border-color: var(--border);">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                  <line x1="9" y1="12" x2="15" y2="12"></line>
+                  stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
                 </svg>
-                Sécuriser (Supprimer GPS)
+                Créer l'extracteur de données (CSV)
+              </button>
+            </div>
+
+            <!-- L'outil Kärcher (Nettoyage EXIF) -->
+            <div
+              style="margin-bottom: 2rem; padding: 1rem; background: rgba(239, 68, 68, 0.05); border-left: 4px solid #ef4444; border-radius: 4px;">
+              <label style="display: block; font-weight: 600; color: var(--text); margin-bottom: 8px;">Purifier les
+                photos pour le Web (Anonymat)
+                <span class="help-icon"
+                  onclick="event.preventDefault(); showToast('Efface absolument toutes les données invisibles attachées à la photo : lieu précis de votre maison (GPS), date et heure exactes, marque du smartphone. Seule l\'image brute subsiste pour une publication sécurisée.', 'info');"
+                  title="Plus d'informations">?</span>
+              </label>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.4;">Attention,
+                outil puissant : générez un script qui va effacer <strong>totalement</strong> toutes les métadonnées
+                (Dates, GPS, Appareil, Logiciel) pour un anonymat complet. Rassurez-vous, de nouvelles copies
+                <code>_geophoto.jpg</code> seront créées car la protection des originaux est obligatoire sur cet
+                outil.<br>
+                <strong style="color:var(--warning-text, #f59e0b);">⚠️ Espace Disque Requis :</strong> Ce processus va
+                dupliquer intégralement vos fichiers. Prévoyez suffisamment d'espace libre sur votre support cible (Clé
+                USB, Disque) avant de
+                lancer ce script sur un gros dossier.
+              </p>
+              <button class="btn-secondary" onclick="generateCleanScript()" type="button"
+                style="width: 100%; padding: 0.75rem; color: #ef4444; border-color: #ef4444; background: transparent;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
+                  <path d="M3 6h18"></path>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+                Générer le script de Nettoyage (Effacer tout)
               </button>
             </div>
           </div>
+
+          <!-- Avertissement Sécurité Windows Global -->
+          <div
+            style="margin-top: 2rem; padding: 1rem; background-color: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; border-radius: 4px;">
+            <p style="margin: 0; font-size: 0.9rem; color: var(--text); line-height: 1.5;">
+              <strong style="color: #ef4444;">🛡️ Sécurité Windows :</strong> Lors du lancement d'un fichier
+              <code>.bat</code>, Windows peut bloquer l'exécution (<em>"Vos paramètres de sécurité Internet ont empêché
+                l'ouverture..."</em> ou un écran bleu).<br>
+              <strong>Pour le débloquer :</strong> Faites un <strong>clic-droit</strong> sur le fichier téléchargé
+              > <strong>Propriétés</strong> > Cochez la case
+              <strong>"Débloquer"</strong>
+              en bas > Appliquez.
+            </p>
+          </div>
+
         </div>
       </div>
+
     </main>
 
     <div id="zone-bouton-windows" class="desktop-download-wrapper"
       style="text-align: center; margin: 2rem 0 1rem 0; display: none;">
 
-      <a href="https://github.com/tresorier21000/geophoto-editor/releases/download/V1.1.0/Installer_GeoPhoto_Editor_V1.1.0.exe"
+      <a href="https://github.com/tresorier21000/geophoto-editor/releases/download/V2.0.0/Installer_GeoPhoto_Editor_V2.0.0.exe"
         class="btn-telechargement">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; vertical-align: middle;">
@@ -201,6 +629,9 @@
 
     </div>
 
+    <!-- Conteneur global pour le nouveau système de notifications (Toasts) -->
+    <div id="toast-container" class="toast-container"></div>
+
     <script>
       // 1. Est-on sur Windows ?
       var isWindows = navigator.userAgent.indexOf("Win") !== -1;
@@ -217,7 +648,7 @@
 
 
     <footer class="app-footer">
-      <p>Version 1.1 - 27 Février 2026</p>
+      <p>Version 2.0.0 - 28 Février 2026</p>
       <p>Développé par <a href="mailto:yves.balestra@gmail.com">yves.balestra@gmail.com</a></p>
     </footer>
   </div>
@@ -236,6 +667,18 @@
       <p class="modal-subtitle">Comment utiliser GeoPhoto Editor 📍📷</p>
 
       <div class="modal-body">
+
+        <p style="margin-bottom: 24px; font-size: 0.95rem; line-height: 1.5;">
+          <strong>GeoPhoto Editor V3</strong> propose deux méthodes de travail distinctes selon vos besoins : le
+          <strong>Mode Simple</strong> (pour retoucher une photo à la fois dans le navigateur) et le <strong>Mode
+            Traitement par Lot</strong> (la nouveauté V3 pour traiter des dossiers entiers ultra-rapidement sur
+          Windows).
+        </p>
+
+        <h3
+          style="color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 16px;">
+          📸 A. MODE SIMPLE (Image par image)</h3>
+
         <section class="help-section">
           <h3>1. Choisir une image</h3>
           <ul>
@@ -244,57 +687,93 @@
           </ul>
           <div
             style="background-color: rgba(74, 144, 226, 0.1); border-left: 4px solid #4a90e2; padding: 12px; margin-top: 12px; border-radius: 4px; font-size: 0.85rem; color: #d1d5db;">
-            <strong>📱 Note pour les smartphones :</strong> Par mesure de sécurité, les sélecteurs récents (comme Google
-            Photos ou la Galerie iOS) effacent parfois le GPS des photos envoyées sur le web. Pour conserver la
-            géolocalisation d'origine :
-            <ul style="margin-top: 8px; margin-bottom: 0; padding-left: 20px;">
-              <li>Utilisez l'option <strong>"Parcourir"</strong> ou <strong>"Fichiers"</strong> de votre téléphone
-                (dossier local) au lieu de la galerie rapide ou du Cloud.</li>
-              <li>Ou privilégiez l'utilisation de l'application sur un ordinateur (PC/Mac).</li>
-            </ul>
+            <strong>📱 Note pour les smartphones :</strong> Par mesure de sécurité, les sélecteurs récents (Google
+            Photos, Galerie iOS) effacent parfois le GPS des photos envoyées sur le web. Privilégiez l'option
+            <strong>"Fichiers" / "Parcourir"</strong> de votre appareil pour conserver le GPS d'origine.
           </div>
-
-
-
         </section>
 
         <section class="help-section">
           <h3>2. Modifier les Données (Date & GPS)</h3>
           <ul>
-            <li><strong>Date et Heure :</strong> Le panneau de gauche affiche les réglages de votre appareil photo. Vous
-              pouvez librement modifier la "Date de prise de vue" via le sélecteur.</li>
+            <li><strong>Date et Heure :</strong> Le panneau de gauche affiche les réglages d'origine. Vous pouvez
+              librement modifier la "Date de prise de vue" via le sélecteur.</li>
             <li><strong>Géolocalisation manuelle :</strong> Cliquez n'importe où sur la carte pour définir un nouveau
-              repère GPS.</li>
-            <li><strong>Recherche :</strong> Tapez le nom d'une ville, d'un pays ou d'un lieu dans le monde entier dans
-              la barre de
-              recherche et appuyez sur Entrée.</li>
-            <li><strong>Bouton "Utiliser ma position précise" :</strong> Récupère les coordonnées exactes détectées par
-              votre appareil informatique (si autorisé).</li>
+              repère GPS, ou utilisez la barre de recherche (Ville, Pays).</li>
           </ul>
         </section>
 
         <section class="help-section">
           <h3>3. Exporter & Sécuriser</h3>
           <ul>
-            <li><strong>Modifier le nom :</strong> Cliquez sur le texte sous la photo pour donner un nom personnalisé à
-              votre fichier final exporté.</li>
             <li><strong style="color: var(--primary);">Mettre à jour & Télécharger :</strong> Enregistre vos
-              modifications (Date et GPS) et télécharge la nouvelle image JPEG sur votre machine.</li>
+              modifications EXIF et télécharge la nouvelle image sur votre machine.</li>
             <li><strong style="color: var(--error-text);">Sécuriser (Supprimer GPS) :</strong> Ce bouton rouge efface
-              <em>toutes</em> les traces géographiques de la photo. Idéal si vous souhaitez la publier anonymement sur
-              Internet. (Télécharge une copie portant la mention "_sans_gps").
+              <em>toutes</em> les traces géographiques de la photo. Parfait pour une publication anonyme sur Internet.
             </li>
           </ul>
         </section>
 
-        <div class="help-privacy-note">
+        <h3
+          style="color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 36px; margin-bottom: 16px;">
+          📁 B. MODE TRAITEMENT PAR LOT (Dossier Entier) - V3</h3>
+
+        <div
+          style="line-height: 1.5; background-color: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 12px; margin-bottom: 20px; border-radius: 4px; font-size: 0.85rem; color: #d1d5db;">
+          <strong>⚠️ Pré-requis ExifTool (Windows) :</strong> Ce mode industriel génère un script système (fichier
+          <code>.bat</code>) conçu pour interagir avec le logiciel gratuit <strong>ExifTool</strong>. Assurez-vous
+          d'avoir l'outil <em>exiftool.exe</em> sur votre ordinateur (soit installé globalement, soit placé dans le
+          dossier de vos photos) pour que le script puisse s'exécuter avec succès.<br><br>
+          <strong>⚠️ Espace Disque Requis :</strong> Si vous choisissez l'option (recommandée) "Conserver les
+          originaux", <strong>veillez à disposer de suffisamment d'espace libre</strong> sur votre disque dur ou votre
+          clé USB. L'outil va créer une copie exacte de chaque photo traitée et risque de s'interrompre si votre espace
+          de stockage sature en cours de route.
+        </div>
+
+        <section class="help-section">
+          <h3>1. Principe de Fonctionnement (3 Étapes)</h3>
+          <ul style="list-style-type: decimal; padding-left: 20px;">
+            <li><strong>Sélectionnez un dossier cible</strong> contenant l'ensemble de vos photos à traiter (sur le
+              bouton Étape 1).</li>
+            <li><strong>Configurez vos traitements</strong> en naviguant dans l'un des 3 onglets thématiques, puis
+              cliquez sur "Générer le script" pour obtenir un fichier <code>.bat</code>.<br>
+              <em style="color:var(--text-muted); font-size: 0.85rem;">💡 Le nom du fichier s'adaptera automatiquement à
+                ce que vous cochez (ex: <code>_copie_renomme.bat</code>) pour vous éviter toute confusion !</em>
+            </li>
+            <li><strong>Exécutez le script :</strong> Déplacez ou copiez ce fichier <code>.bat</code> directement à
+              l'intérieur de votre dossier de photos, et double-cliquez dessus. Il travaillera tout seul !</li>
+          </ul>
+        </section>
+
+        <section class="help-section">
+          <h3>2. Utilisation des 3 Onglets</h3>
+          <ul>
+            <li><strong>Onglet Métadonnées :</strong> Applique de force une même Date ou un même Point GPS à des
+              centaines de photos en même temps. Idéal si le boîtier n'était pas à l'heure ou ne possédait pas de puce
+              GPS.</li>
+            <li><strong>Onglet Organisation :</strong> Outils de rangement. Permet de renommer en masse vos fichiers
+              avec la syntaxe <em>(AnnéeMoisJour_1.jpg)</em>, et de classer vos photos automatiquement dans de nouveaux
+              sous-dossiers par Années et par Mois !<br>
+              <em style="color:var(--text-muted); font-size: 0.8rem;">(Si vous décochez "Conserver les fichiers
+                originaux", le tag <code>_ecrase</code> apparaîtra sur votre script, signifiant que les photos d'origine
+                seront déplacées/écrasées).</em>
+            </li>
+            <li><strong>Onglet Utilitaires :</strong> Permet d'extraire instantanément un tableau de bord (Document CSV
+              Excel) répertoriant toutes les données exif de votre dossier, ou de déclencher le bouton rouge de
+              <strong>Nettoyage Kärcher EXIF</strong> pour tout vider avant l'envoi vers un cloud non-sécurisé.
+            </li>
+          </ul>
+        </section>
+
+        <div class="help-privacy-note" style="margin-top: 32px;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: #10b981;">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
             <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
           </svg>
-          <p><strong>Zéro transfert de données :</strong> Vos photos ne quittent jamais votre ordinateur. Tout réseau ou
-            calcul est effectué localement par votre navigateur !</p>
+          <p><strong>Zéro transfert de données :</strong> Qu'il s'agisse du Mode Simple ou du Traitement par Lot, vos
+            fichiers originaux ne sont jamais envoyés sur nos serveurs. L'entièreté des modifications est traitée
+            localement par votre propre hardware.</p>
         </div>
       </div>
     </div>

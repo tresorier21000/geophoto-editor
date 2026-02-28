@@ -622,6 +622,20 @@ button:active {
   }
 }
 
+@keyframes pulseError {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+
+  50% {
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
 @keyframes slideUpFade {
   from {
     opacity: 0;
@@ -729,7 +743,8 @@ button:active {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: auto; /* <-- C'est LA ligne qui corrige le problème ! */
+  width: auto;
+  /* <-- C'est LA ligne qui corrige le problème ! */
 }
 
 .modal-close:hover {
@@ -742,7 +757,8 @@ button:active {
   font-weight: 700;
   margin-bottom: 0.25rem;
   color: #fff;
-  text-align: center; /* Ajouté pour centrer le titre */
+  text-align: center;
+  /* Ajouté pour centrer le titre */
 }
 
 .modal-subtitle {
@@ -751,7 +767,8 @@ button:active {
   margin-bottom: 2rem;
   border-bottom: 1px solid var(--border);
   padding-bottom: 1rem;
-  text-align: center; /* Ajouté pour centrer le titre */
+  text-align: center;
+  /* Ajouté pour centrer le titre */
 }
 
 .modal-body {
@@ -878,20 +895,25 @@ button:active {
 .btn-telechargement {
   display: inline-block;
   padding: 12px 24px;
-  background-color: rgba(255, 255, 255, 0.05); /* Fond très légèrement transparent */
+  background-color: rgba(255, 255, 255, 0.05);
+  /* Fond très légèrement transparent */
   color: #fff;
   text-decoration: none;
   border-radius: 8px;
   font-family: Arial, sans-serif;
   font-weight: bold;
-  border: 1px solid #7b61ff; /* Bordure violette pour rappeler votre thème */
+  border: 1px solid #7b61ff;
+  /* Bordure violette pour rappeler votre thème */
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(123, 97, 255, 0.2); /* Léger halo lumineux violet */
+  box-shadow: 0 4px 15px rgba(123, 97, 255, 0.2);
+  /* Léger halo lumineux violet */
 }
 
 .btn-telechargement:hover {
-  background-color: rgba(123, 97, 255, 0.15); /* S'éclaire au survol */
-  transform: translateY(-2px); /* Remonte très légèrement */
+  background-color: rgba(123, 97, 255, 0.15);
+  /* S'éclaire au survol */
+  transform: translateY(-2px);
+  /* Remonte très légèrement */
 }
 
 /* Cache le bouton de téléchargement si l'application est installée (PWA) */
@@ -905,5 +927,197 @@ button:active {
 @media (max-width: 768px) {
   .desktop-download-wrapper {
     display: none !important;
+  }
+}
+
+/* === Styles des Onglets V3 (Mode Dossier) === */
+.tabs-container {
+  display: flex;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 1.5rem;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--text-muted);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.tab-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+}
+
+.tab-btn.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.tab-content {
+  display: none;
+  animation: fadeIn 0.4s ease forwards;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* === Système de Notifications (Toasts) === */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  pointer-events: none;
+  width: 350px;
+  /* Fixe définitivement la largeur de la colonne invisible */
+  max-width: calc(100vw - 48px);
+}
+
+.toast {
+  width: 100%;
+  box-sizing: border-box;
+  display: block;
+  /* Séparation violente de Flex */
+  background: var(--surface);
+  color: var(--text);
+  padding: 16px 20px;
+  margin-top: 12px;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  font-size: 0.95rem;
+  line-height: 1.4;
+  border-left: 4px solid var(--primary);
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateX(50px);
+  animation: slideInRight 0.3s ease forwards;
+  position: relative;
+  overflow: hidden;
+}
+
+.toast.error {
+  border-left-color: #ef4444;
+}
+
+.toast.success {
+  border-left-color: #10b981;
+}
+
+.toast.warning {
+  border-left-color: #f59e0b;
+}
+
+.toast-icon {
+  float: left;
+  /* Flotte à gauche du texte pour gagner de la place sans flex */
+  margin-top: 2px;
+  margin-right: 12px;
+}
+
+.toast.info .toast-icon {
+  color: var(--primary);
+}
+
+.toast.error .toast-icon {
+  color: #ef4444;
+}
+
+.toast.success .toast-icon {
+  color: #10b981;
+}
+
+.toast.warning .toast-icon {
+  color: #f59e0b;
+}
+
+/* === Bulles d'aide (?) === */
+.help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+  margin-left: 8px;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+  vertical-align: middle;
+}
+
+.help-icon:hover {
+  transform: scale(1.15);
+  background-color: #2563eb;
+}
+
+.toast-message {
+  display: block;
+  overflow: hidden;
+  /* Déclenche un nouveau contexte de formattage à côté du float */
+  white-space: normal;
+  word-wrap: break-word;
+  /* Oblige l'impression bout à bout */
+  padding-right: 24px;
+  /* Espace réservé pour la croix de fermeture */
+}
+
+.toast-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  font-size: 1.2rem;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+
+.toast-close:hover {
+  opacity: 1;
+}
+
+.toast.hiding {
+  animation: slideOutRight 0.3s ease forwards;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(100%);
   }
 }

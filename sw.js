@@ -1,4 +1,4 @@
-const CACHE_NAME = 'geophoto-v8';
+const CACHE_NAME = 'geophoto-v9';
 const urlsToCache = [
   './',
   './index.html',
