@@ -11,8 +11,11 @@
 > Le Mode 1 (image unique) reste totalement multiplateforme.
 
 Idéal pour une modification rapide et visuelle d'une seule photo.
+
 👉 **Visualisation immédiate :** La carte interactive se centre automatiquement sur les coordonnées GPS existantes.
+
 👉 **Modification Intuitive :** Modifiez la position d'un simple clic sur la carte, via la barre de recherche, ou utilisez votre géolocalisation actuelle.
+
 👉 **Confidentialité totale :** Le traitement s'effectue intégralement en local dans votre navigateur.
 
 
