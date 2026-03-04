@@ -63,6 +63,7 @@ function showToast(message, type = 'warning') {
 // ==========================================
 const modeChoiceSection = document.getElementById('modeChoiceSection');
 const singleModeSection = document.getElementById('singleModeSection');
+const visualModeSection = document.getElementById('visualModeSection');
 const batchModeSection = document.getElementById('batchModeSection');
 
 function selectMode(mode) {
@@ -70,9 +71,13 @@ function selectMode(mode) {
 
   if (mode === 'single' && singleModeSection) {
     singleModeSection.style.display = 'block';
-    // Redimensionner la carte si elle a déjà été chargée alors que le conteneur était caché
     if (map) {
       setTimeout(() => map.invalidateSize(), 100);
+    }
+  } else if (mode === 'visual' && visualModeSection) {
+    visualModeSection.style.display = 'block';
+    if (typeof visualMap !== 'undefined' && visualMap) {
+      setTimeout(() => visualMap.invalidateSize(), 100);
     }
   } else if (mode === 'batch' && batchModeSection) {
     batchModeSection.style.display = 'block';
@@ -81,6 +86,7 @@ function selectMode(mode) {
 
 function goBackToChoice() {
   if (singleModeSection) singleModeSection.style.display = 'none';
+  if (visualModeSection) visualModeSection.style.display = 'none';
   if (batchModeSection) batchModeSection.style.display = 'none';
   if (modeChoiceSection) modeChoiceSection.style.display = 'block';
 }
@@ -195,8 +201,11 @@ function processEXIF() {
   } catch (err) {
     console.error("Erreur de lecture EXIF:", err);
     resetToDefaultMap();
-    exifSection.style.display = "none";
-    showError("Erreur lors de la lecture des métadonnées EXIF de cette image.");
+    // Afficher la section avec le champ date accessible malgré l'erreur
+    exifDataGrid.innerHTML = '<div class="exif-item" style="grid-column: 1 / -1;"><span class="exif-value" style="color: var(--text-muted); font-style: italic;">Aucune métadonnée EXIF détectée dans cette image.</span></div>';
+    datetimeInput.value = '';
+    exifSection.style.display = "flex";
+    showError("L'image ne contient pas de métadonnées EXIF. Vous pouvez quand même définir une date et un GPS.");
   }
 }
 
@@ -270,7 +279,6 @@ function renderExifData(exifObj) {
   }
 
   if (hasData) {
-    exifSection.style.display = "flex";
     metadata.forEach(item => {
       exifDataGrid.innerHTML += `
         <div class="exif-item">
@@ -280,8 +288,11 @@ function renderExifData(exifObj) {
       `;
     });
   } else {
-    exifSection.style.display = "none";
+    exifDataGrid.innerHTML = '<div class="exif-item" style="grid-column: 1 / -1;"><span class="exif-value" style="color: var(--text-muted); font-style: italic;">Aucune métadonnée EXIF détectée dans cette image.</span></div>';
   }
+
+  // Toujours afficher la section pour permettre de créer/modifier une date
+  exifSection.style.display = "flex";
 }
 
 /**
@@ -399,24 +410,74 @@ function toDMS(dec) {
 // --- Action Button Handlers ---
 
 /**
- * Injects new GPS coordinates into image EXIF and triggers download
+ * Saves an image using the File System Access API ("Save As" dialog)
+ * Falls back to classic download if the API is unavailable
+ * @param {string} dataUrl - Base64 data URL of the image
+ * @param {string} suggestedName - Suggested filename
+ */
+async function saveImageWithDialog(dataUrl, suggestedName) {
+  // Convert data URL to Blob
+  const byteString = atob(dataUrl.split(',')[1]);
+  const mimeType = dataUrl.split(',')[0].split(':')[1].split(';')[0];
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+  const blob = new Blob([ab], { type: mimeType });
+
+  // Try File System Access API (Chrome/Edge)
+  if (window.showSaveFilePicker) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: suggestedName,
+        types: [{
+          description: 'Image JPEG',
+          accept: { 'image/jpeg': ['.jpg', '.jpeg'] }
+        }]
+      });
+      const writable = await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      showToast(`Image enregistrée : ${handle.name}`, 'success');
+      return;
+    } catch (err) {
+      // User cancelled the dialog
+      if (err.name === 'AbortError') {
+        showToast('Enregistrement annulé.', 'warning');
+        return;
+      }
+      console.warn('File System Access API failed, falling back to download:', err);
+    }
+  }
+
+  // Fallback: classic download
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = suggestedName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+/**
+ * Injects new GPS coordinates into image EXIF and saves via dialog
  */
 function updateGPS() {
   const lat = parseFloat(latInput.value);
   const lng = parseFloat(lngInput.value);
 
   if (isNaN(lat) || isNaN(lng)) {
-    // Basic animation to shake inputs on error could be added here
     showToast("Veuillez sélectionner des coordonnées valides en cliquant sur la carte.");
     return;
   }
 
   // Visual feedback on button
-  const btn = document.querySelector('.btn-primary');
+  const btn = document.querySelector('#singleModeSection .btn-primary');
   const originalInnerHTML = btn.innerHTML;
   btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg> Génération...`;
 
-  setTimeout(() => { // Small timeout to allow UI update
+  setTimeout(async () => {
     try {
       let exifObj = piexif.load(originalImageDataUrl);
 
@@ -436,14 +497,10 @@ function updateGPS() {
       // --- Update Date and Time ---
       const newDateTime = datetimeInput.value;
       if (newDateTime) {
-        // Convert "YYYY-MM-DDTHH:MM:SS" back to EXIF "YYYY:MM:DD HH:MM:SS"
         const exifDateTime = newDateTime.replace(/-/, ':').replace(/-/, ':').replace('T', ' ');
-
         if (!exifObj["Exif"]) exifObj["Exif"] = {};
         if (!exifObj["0th"]) exifObj["0th"] = {};
-
         exifObj["Exif"][piexif.ExifIFD.DateTimeOriginal] = exifDateTime;
-        // Also update the main image datetime for consistency
         exifObj["0th"][piexif.ImageIFD.DateTime] = exifDateTime;
       }
 
@@ -451,20 +508,18 @@ function updateGPS() {
       const exifBytes = piexif.dump(exifObj);
       const newDataUrl = piexif.insert(exifBytes, originalImageDataUrl);
 
-      // Trigger automatic download
-      const a = document.createElement("a");
-      a.href = newDataUrl;
+      // Déterminer le nom du fichier
       const customName = filenameInput.value.trim() || originalFileName;
-      a.download = `${customName}_geotagged.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      const keepOriginals = document.getElementById('singleKeepOriginals').checked;
+      const fileName = keepOriginals ? `${customName}_geotagged.jpg` : `${customName}.jpg`;
+
+      // Enregistrer via la boîte de dialogue
+      await saveImageWithDialog(newDataUrl, fileName);
 
     } catch (err) {
       console.error("Erreur lors de la modification EXIF:", err);
       showToast("Une erreur inattendue est survenue lors de l'enregistrement. Vérifiez que votre image est bien un JPEG standard.");
     } finally {
-      // Restore button text
       btn.innerHTML = originalInnerHTML;
     }
   }, 100);
@@ -518,13 +573,13 @@ function getCurrentLocation() {
  * Removes GPS coordinates from image EXIF for security/privacy
  */
 function removeGPS() {
-  const btn = document.querySelector('.btn-danger');
+  const btn = document.querySelector('#singleModeSection .btn-danger');
   if (!btn) return;
 
   const originalInnerHTML = btn.innerHTML;
   btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg> Sécurisation...`;
 
-  setTimeout(() => {
+  setTimeout(async () => {
     try {
       let exifObj = piexif.load(originalImageDataUrl);
 
@@ -537,14 +592,13 @@ function removeGPS() {
       const exifBytes = piexif.dump(exifObj);
       const newDataUrl = piexif.insert(exifBytes, originalImageDataUrl);
 
-      // Trigger automatic download
-      const a = document.createElement("a");
-      a.href = newDataUrl;
+      // Déterminer le nom du fichier
       const customName = filenameInput.value.trim() || originalFileName;
-      a.download = `${customName}_sans_gps.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      const keepOriginals = document.getElementById('singleKeepOriginals').checked;
+      const fileName = keepOriginals ? `${customName}_sans_gps.jpg` : `${customName}.jpg`;
+
+      // Enregistrer via la boîte de dialogue
+      await saveImageWithDialog(newDataUrl, fileName);
 
     } catch (err) {
       console.error("Erreur lors de la suppression EXIF:", err);
@@ -606,17 +660,21 @@ function validateManualFolder() {
   if (!path) {
     display.textContent = "Aucun dossier validé";
     hiddenInput.value = "";
-    display.style.color = "var(--text)";
+    display.style.color = "var(--text-muted)";
+    inputEl.style.cssText = "flex: 1; padding: 0.75rem; border: 1px solid var(--border); border-radius: 4px; background-color: #0f172a; color: #f8fafc; font-family: monospace; font-size: 0.95rem; -webkit-appearance: none; appearance: none;";
+    inputEl.classList.remove('folder-validated');
     showToast("Veuillez d'abord coller le chemin d'un dossier.", "warning");
     return;
   }
 
-  // Nettoyage de base : retirer les guillemets si l'utilisateur a fait "Copier en tant que chemin" sous Windows
   let cleanPath = path.replace(/^["']|["']$/g, '');
+  inputEl.value = cleanPath;
 
   hiddenInput.value = cleanPath;
-  display.textContent = `Dossier validé : ${cleanPath}`;
-  display.style.color = "#10b981"; // Vert succès
+  display.textContent = "Dossier validé !";
+  display.style.color = "#10b981";
+  inputEl.style.cssText = "flex: 1; padding: 0.75rem; border: 2px solid #10b981; border-radius: 4px; background-color: #0f172a; color: #10b981; -webkit-text-fill-color: #10b981; font-family: monospace; font-size: 0.95rem; -webkit-appearance: none; appearance: none;";
+  inputEl.classList.add('folder-validated');
 
   showToast("Chemin de dossier enregistré avec succès. Tous les générateurs .bat utiliseront ce chemin.", "success");
 }
@@ -781,7 +839,7 @@ function updateBatchFolderName(input) {
 }
 
 // Générateur du script Batch (Étape 3)
-function generateBatchScript() {
+async function generateBatchScript() {
   const checkDate = document.getElementById('batchCheckDate').checked;
   const checkGPS = document.getElementById('batchCheckGPS').checked;
   const keepOriginals = document.getElementById('batchKeepOriginals').checked;
@@ -915,19 +973,11 @@ pause
 
   const batFileName = `!_traitement_lot_[${safeFolderName}]_${tags.join('_')}.bat`;
 
-  const blob = new Blob([batContent], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = batFileName;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  await downloadBatFile(batContent, batFileName);
 }
 
 // Générateur du script d'Extraction CSV (Étape 5)
-function generateCSVExtractionScript() {
+async function generateCSVExtractionScript() {
   const targetFolder = document.getElementById('batchFolderNameHidden').value;
 
   if (!targetFolder) {
@@ -995,15 +1045,7 @@ pause
   const safeFolderName = targetFolder.replace(/[^a-z0-9]/gi, '_');
   const batFileName = `!_extraction_csv_[${safeFolderName}].bat`;
 
-  const blob = new Blob([batContent], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = batFileName;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  await downloadBatFile(batContent, batFileName);
 }
 
 // === Navigation entre les Onglets (V3) ===
@@ -1054,7 +1096,7 @@ function switchBatchTab(targetTabId) {
 }
 
 // === Générateur du script d'Organisation (Étape 2 / V3) ===
-function generateOrganizeScript() {
+async function generateOrganizeScript() {
   const targetFolder = document.getElementById('batchFolderNameHidden').value;
 
   if (!targetFolder) {
@@ -1177,19 +1219,11 @@ pause
 
   const batFileName = `!_organisation_[${safeFolderName}]_${tags.join('_')}.bat`;
 
-  const blob = new Blob([batContent], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = batFileName;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  await downloadBatFile(batContent, batFileName);
 }
 
 // === Générateur du script de Nettoyage EXIF (Kärcher) (Étape 3 / V3) ===
-function generateCleanScript() {
+async function generateCleanScript() {
   const targetFolder = document.getElementById('batchFolderNameHidden').value;
 
   if (!targetFolder) {
@@ -1252,21 +1286,651 @@ ${exifCommand}
 echo.
 echo ========================================================
 echo   NETTOYAGE TERMINE AVEC SUCCES !
-echo   Vos nouvelles photos sont pretes pour le web.
+echo   Vos nouvelles photos sont pretes for le web.
 echo ========================================================
 pause
 `;
 
   const safeFolderName = targetFolder.replace(/[^a-z0-9]/gi, '_');
-  const batFileName = `!_nettoyage_exif_[${safeFolderName}]_copie_purge.bat`;
+  const batFileName = `!_nettoyage_exif_[${safeFolderName}]_${getTimestamp()}.bat`;
 
-  const blob = new Blob([batContent], { type: "text/plain;charset=utf-8" });
+  await downloadBatFile(batContent, batFileName);
+}
+
+// ==========================================
+// MODE 2 : SÉLECTION VISUELLE (MULTI-IMAGE)
+// ==========================================
+
+let visualMap = null;
+let visualMarker = null;
+let multiImages = [];
+let focusedImageId = null;
+
+// DOM Elements - Visual Mode
+const multiImageInput = document.getElementById("multiImageInput");
+const visualLoadingIndicator = document.getElementById("visualLoadingIndicator");
+const visualContentSection = document.getElementById("visualContentSection");
+const fileTableBody = document.getElementById("fileTableBody");
+const selectAllImages = document.getElementById("selectAllImages");
+const selectedCountEl = document.getElementById("selectedCount");
+
+const visualPreview = document.getElementById("visualPreview");
+const focusPlaceholder = document.getElementById("focusPlaceholder");
+const focusBanner = document.getElementById("focusBanner");
+const focusBannerName = document.getElementById("focusBannerName");
+const focusBannerMod = document.getElementById("focusBannerMod");
+
+const visualApplyDateCheck = document.getElementById("visualApplyDateCheck");
+const visualDatetimeInput = document.getElementById("visualDatetimeInput");
+const visualApplyGPSCheck = document.getElementById("visualApplyGPSCheck");
+const visualLatInput = document.getElementById("visualLat");
+const visualLngInput = document.getElementById("visualLng");
+
+// --- Visual Mode: Event Listeners ---
+
+if (multiImageInput) {
+  multiImageInput.addEventListener("change", handleMultiFiles);
+}
+
+// Search on Enter key for Visual Mode
+const visualSearchInputElement = document.getElementById('visualSearchLocation');
+if (visualSearchInputElement) {
+  visualSearchInputElement.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      searchCityVisual();
+    }
+  });
+}
+
+if (selectAllImages) {
+  selectAllImages.addEventListener('change', function () {
+    toggleSelectAll(this);
+  });
+}
+
+const btnApplySelected = document.getElementById("btnApplySelected");
+if (btnApplySelected) btnApplySelected.addEventListener('click', applyModificationsToSelected);
+
+const btnGenerateVisualScript = document.getElementById("btnGenerateVisualScript");
+if (btnGenerateVisualScript) btnGenerateVisualScript.addEventListener('click', generateVisualScript);
+
+const btnRemoveGPS = document.getElementById("btnRemoveGPS");
+if (btnRemoveGPS) btnRemoveGPS.addEventListener('click', generateVisualSecurityScript);
+
+// --- Visual Mode: Folder Validation ---
+
+function validateVisualFolder() {
+  const inputEl = document.getElementById('visualFolderPathInput');
+  const path = inputEl.value.trim();
+  const display = document.getElementById('visualFolderStatusText');
+  const browseArea = document.getElementById('visualBrowseArea');
+
+  if (!path) {
+    display.textContent = "Aucun dossier validé";
+    display.style.color = "var(--text-muted)";
+    inputEl.style.cssText = "flex: 1; padding: 0.75rem; border: 1px solid var(--border); border-radius: 4px; background-color: #0f172a; color: #f8fafc; font-family: monospace; font-size: 0.95rem; -webkit-appearance: none; appearance: none;";
+    inputEl.classList.remove('folder-validated');
+    browseArea.style.opacity = "0.5";
+    browseArea.style.pointerEvents = "none";
+    browseArea.style.cursor = "not-allowed";
+    showToast("Veuillez d'abord coller le chemin d'origine du dossier.", "warning");
+    return;
+  }
+
+  let cleanPath = path.replace(/^["']|["']$/g, '');
+  inputEl.value = cleanPath;
+  inputEl.style.cssText = "flex: 1; padding: 0.75rem; border: 2px solid #10b981; border-radius: 4px; background-color: #0f172a; color: #10b981; -webkit-text-fill-color: #10b981; font-family: monospace; font-size: 0.95rem; -webkit-appearance: none; appearance: none;";
+  inputEl.classList.add('folder-validated');
+  display.textContent = "Dossier validé !";
+  display.style.color = "#10b981";
+
+  browseArea.style.opacity = "1";
+  browseArea.style.pointerEvents = "auto";
+  browseArea.style.cursor = "pointer";
+
+  showToast("Chemin validé. Vous pouvez maintenant 'Parcourir' pour sélectionner les images.", "success");
+}
+
+// --- Visual Mode: Core Functions ---
+
+async function handleMultiFiles(e) {
+  const files = Array.from(e.target.files).filter(f => f.type === "image/jpeg" || f.name.toLowerCase().endsWith('.jpg') || f.name.toLowerCase().endsWith('.jpeg'));
+
+  if (files.length === 0) {
+    showToast("Aucune image JPEG trouvée dans ce dossier.", "error");
+    return;
+  }
+
+  // --- SÉCURITÉ : Vérifier la cohérence entre Étape 1 et Étape 2 ---
+  const step1Path = document.getElementById('visualFolderPathInput').value.trim();
+  if (step1Path && files[0].webkitRelativePath) {
+    const browsedFolderName = files[0].webkitRelativePath.split('/')[0];
+    // Extraire le dernier segment du chemin de l'étape 1
+    const step1FolderName = step1Path.replace(/[\\/]+$/, '').split(/[\\/]/).pop();
+
+    if (browsedFolderName.toLowerCase() !== step1FolderName.toLowerCase()) {
+      const continuer = confirm(
+        `⚠️ ATTENTION : Incohérence de dossier détectée !\n\n` +
+        `• Étape 1 (chemin collé) : "${step1FolderName}"\n` +
+        `• Étape 2 (dossier parcouru) : "${browsedFolderName}"\n\n` +
+        `Le script .bat généré ciblera le dossier de l'Étape 1.\n` +
+        `Si les dossiers sont différents, le script ne fonctionnera pas.\n\n` +
+        `Voulez-vous continuer quand même ?`
+      );
+      if (!continuer) {
+        // Réinitialiser l'input file pour permettre une nouvelle sélection
+        e.target.value = '';
+        showToast("Chargement annulé. Veuillez corriger le chemin de l'Étape 1 ou sélectionner le bon dossier.", "warning");
+        return;
+      }
+    }
+  }
+
+  const uploadArea = document.querySelector('.upload-area-mini');
+  if (uploadArea) uploadArea.style.display = 'none';
+
+  visualLoadingIndicator.style.display = "flex";
+  visualContentSection.style.display = "none";
+
+  multiImages = [];
+  focusedImageId = null;
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const dataUrl = await readFileAsDataURLVisual(file);
+    const imgData = extractEXIFForMulti(dataUrl, file.name, i);
+    multiImages.push({
+      id: i,
+      file: file,
+      name: file.name,
+      originalDataUrl: dataUrl,
+      exifObjOriginal: imgData.exifObj,
+      dateToApply: null,
+      latToApply: null,
+      lngToApply: null,
+      ...imgData.parsed
+    });
+  }
+
+  if (selectAllImages) selectAllImages.checked = false;
+
+  renderVisualTable();
+  updateVisualSelectionCount();
+
+  visualLoadingIndicator.style.display = "none";
+  visualContentSection.style.display = "grid";
+
+  setTimeout(() => { if (visualMap) visualMap.invalidateSize(); }, 400);
+
+  if (multiImages.length > 0) {
+    focusImage(0);
+  }
+}
+
+function readFileAsDataURLVisual(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = e => reject(e);
+    reader.readAsDataURL(file);
+  });
+}
+
+function extractEXIFForMulti(dataUrl, fileName, id) {
+  let parsed = { dateStr: "-", lat: null, lng: null, isModified: false, isSecured: false };
+  let exifObj = {};
+  try {
+    exifObj = piexif.load(dataUrl);
+    const ifd0 = exifObj["0th"] || {};
+    const exif = exifObj["Exif"] || {};
+    const gps = exifObj["GPS"];
+
+    let dateTimeStr = exif[piexif.ExifIFD.DateTimeOriginal] || ifd0[piexif.ImageIFD.DateTime];
+    if (dateTimeStr) {
+      parsed.dateStr = dateTimeStr;
+    }
+
+    if (gps && gps[piexif.GPSIFD.GPSLatitude] && gps[piexif.GPSIFD.GPSLongitude]) {
+      parsed.lat = parseFloat(dmsToDecimal(gps[piexif.GPSIFD.GPSLatitude], gps[piexif.GPSIFD.GPSLatitudeRef]));
+      parsed.lng = parseFloat(dmsToDecimal(gps[piexif.GPSIFD.GPSLongitude], gps[piexif.GPSIFD.GPSLongitudeRef]));
+    }
+  } catch (err) {
+    console.warn(`Erreur EXIF pour ${fileName}`, err);
+  }
+  return { exifObj, parsed };
+}
+
+function renderVisualTable() {
+  if (!fileTableBody) return;
+  fileTableBody.innerHTML = '';
+
+  multiImages.forEach(img => {
+    const tr = document.createElement("tr");
+    tr.id = `row-${img.id}`;
+    if (img.id === focusedImageId) tr.classList.add('focus-row');
+
+    tr.onclick = (e) => {
+      if (e.target.tagName.toLowerCase() !== 'input') {
+        focusImage(img.id);
+      }
+    };
+
+    let gpsText = img.lat !== null && !isNaN(img.lat) ? `${img.lat.toFixed(4)}, ${img.lng.toFixed(4)}` : `<span style="color:var(--text-muted)">Aucun GPS</span>`;
+    let badges = "";
+    if (img.isModified) badges += `<span class="status-badge modified">MODIFIÉ</span>`;
+    if (img.isSecured) badges += `<span class="status-badge secured">SÉCURISÉ</span>`;
+
+    let dateDisplay = img.dateStr && img.dateStr !== "-" ? img.dateStr.replace(/:/g, '/').replace("T", " ") : "-";
+
+    tr.innerHTML = `
+      <td style="text-align: center;" onclick="event.stopPropagation()">
+        <input type="checkbox" class="row-checkbox" value="${img.id}" onchange="updateVisualSelectionCount()" style="width:16px; height:16px; cursor:pointer;">
+      </td>
+      <td style="font-weight: 500;">${img.name} ${badges}</td>
+      <td style="font-family: monospace; font-size: 0.85rem;">${dateDisplay}</td>
+      <td style="font-family: monospace; font-size: 0.85rem;">${gpsText}</td>
+    `;
+    fileTableBody.appendChild(tr);
+  });
+}
+
+function toggleSelectAll(cb) {
+  const checkboxes = document.querySelectorAll('.row-checkbox');
+  checkboxes.forEach(c => c.checked = cb.checked);
+  updateVisualSelectionCount();
+}
+
+function updateVisualSelectionCount() {
+  if (!selectedCountEl) return;
+  const count = document.querySelectorAll('.row-checkbox:checked').length;
+  selectedCountEl.textContent = count;
+
+  const btnApply = document.getElementById("btnApplySelected");
+  const btnGen = document.getElementById("btnGenerateVisualScript");
+  const btnRemGPS = document.getElementById("btnRemoveGPS");
+
+  [btnApply, btnGen, btnRemGPS].forEach(btn => {
+    if (btn) btn.disabled = count === 0;
+  });
+}
+
+function focusImage(id) {
+  document.querySelectorAll('.file-table tbody tr').forEach(tr => tr.classList.remove('focus-row'));
+  const row = document.getElementById(`row-${id}`);
+  if (row) row.classList.add('focus-row');
+
+  focusedImageId = id;
+  const img = multiImages.find(i => i.id === id);
+  if (!img) return;
+
+  if (visualPreview) {
+    visualPreview.src = img.originalDataUrl;
+    visualPreview.style.display = "block";
+    visualPreview.style.opacity = "1";
+  }
+  if (focusPlaceholder) focusPlaceholder.style.display = "none";
+  if (focusBanner) focusBanner.style.display = "flex";
+  if (focusBannerName) focusBannerName.textContent = img.name;
+  if (focusBannerMod) focusBannerMod.style.display = img.isModified || img.isSecured ? "inline-block" : "none";
+
+  if (visualDatetimeInput) {
+    if (img.dateStr !== "-") {
+      visualDatetimeInput.value = img.dateStr.substring(0, 10).replace(/:/g, '-') + 'T' + img.dateStr.substring(11);
+    } else {
+      visualDatetimeInput.value = "";
+    }
+  }
+
+  if (img.lat !== null && !isNaN(img.lat)) {
+    if (visualLatInput) visualLatInput.value = img.lat;
+    if (visualLngInput) visualLngInput.value = img.lng;
+    updateVisualMap(parseFloat(img.lat), parseFloat(img.lng));
+  } else {
+    resetVisualMap();
+  }
+}
+
+// --- Visual Mode: Map Functions (Independent from Mode 1) ---
+
+function resetVisualMap() {
+  if (visualLatInput) visualLatInput.value = "";
+  if (visualLngInput) visualLngInput.value = "";
+  updateVisualMap(48.8566, 2.3522);
+  if (visualMarker && visualMap) {
+    visualMap.removeLayer(visualMarker);
+    visualMarker = null;
+  }
+}
+
+function updateVisualMap(lat, lng) {
+  if (!visualMap) {
+    visualMap = L.map('visualMap', { zoomControl: false }).setView([lat, lng], 13);
+    L.control.zoom({ position: 'bottomright' }).addTo(visualMap);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(visualMap);
+
+    visualMap.on('click', function (e) {
+      if (visualLatInput) visualLatInput.value = e.latlng.lat.toFixed(6);
+      if (visualLngInput) visualLngInput.value = e.latlng.lng.toFixed(6);
+      updateVisualMarker(e.latlng.lat, e.latlng.lng);
+    });
+  } else {
+    visualMap.setView([lat, lng], 13);
+  }
+  updateVisualMarker(lat, lng);
+}
+
+function updateVisualMarker(lat, lng) {
+  if (!visualMarker && visualMap) {
+    visualMarker = L.marker([lat, lng], { draggable: false }).addTo(visualMap);
+  } else if (visualMarker) {
+    visualMarker.setLatLng([lat, lng]);
+  }
+}
+
+// --- Visual Mode: Search & Geolocation ---
+
+async function searchCityVisual() {
+  const searchInput = document.getElementById('visualSearchLocation');
+  const query = searchInput.value.trim();
+  if (!query) {
+    showToast("Veuillez entrer une ville ou un code postal.");
+    return;
+  }
+
+  const btn = searchInput.nextElementSibling;
+  const originalHTML = btn.innerHTML;
+  btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-spin"><circle cx="12" cy="12" r="10"></circle></svg>`;
+
+  try {
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&accept-language=fr`);
+    const data = await response.json();
+    if (data && data.length > 0) {
+      const lat = parseFloat(data[0].lat);
+      const lng = parseFloat(data[0].lon);
+      if (visualLatInput) visualLatInput.value = lat.toFixed(6);
+      if (visualLngInput) visualLngInput.value = lng.toFixed(6);
+      updateVisualMap(lat, lng);
+    } else {
+      showToast("Aucun lieu trouvé pour cette recherche.");
+    }
+  } catch (error) {
+    console.error("Erreur de recherche:", error);
+    showToast("Erreur réseau lors de la recherche du lieu.");
+  } finally {
+    btn.innerHTML = originalHTML;
+  }
+}
+
+function getVisualCurrentLocation() {
+  if (navigator.geolocation) {
+    showToast("Recherche de votre position...", "info");
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        if (visualLatInput) visualLatInput.value = lat.toFixed(6);
+        if (visualLngInput) visualLngInput.value = lng.toFixed(6);
+        updateVisualMap(lat, lng);
+        showToast("Position trouvée !", "success");
+      },
+      (error) => {
+        console.error("Erreur géolocalisation:", error);
+        showToast("Impossible d'obtenir votre position.", "error");
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  } else {
+    showToast("La géolocalisation n'est pas supportée par votre navigateur.", "error");
+  }
+}
+
+// --- Visual Mode: Action Handlers ---
+
+function getSelectedImageIds() {
+  return Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => parseInt(cb.value));
+}
+
+function applyModificationsToSelected() {
+  const ids = getSelectedImageIds();
+  if (ids.length === 0) return;
+
+  const btn = document.getElementById("btnApplySelected");
+  const origHtml = btn.innerHTML;
+  btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="animate-spin"><circle cx="12" cy="12" r="10"></circle></svg> Application...`;
+
+  const applyGPS = visualApplyGPSCheck.checked;
+  const newLat = parseFloat(visualLatInput.value);
+  const newLng = parseFloat(visualLngInput.value);
+
+  const applyDate = visualApplyDateCheck.checked;
+  const newDateVal = visualDatetimeInput.value;
+
+  if (!applyGPS && !applyDate) {
+    showToast("Veuillez cocher au moins une des deux actions : Date ou GPS", "info");
+    btn.innerHTML = origHtml;
+    return;
+  }
+  if (applyGPS && (isNaN(newLat) || isNaN(newLng))) {
+    showToast("Coordonnées GPS invalides", "error");
+    btn.innerHTML = origHtml;
+    return;
+  }
+  if (applyDate && !newDateVal) {
+    showToast("Date/Heure invalide", "error");
+    btn.innerHTML = origHtml;
+    return;
+  }
+
+  setTimeout(() => {
+    ids.forEach(id => {
+      const img = multiImages.find(i => i.id === id);
+      if (!img) return;
+
+      if (applyDate) {
+        const exifDateTime = newDateVal.replace(/-/, ':').replace(/-/, ':').replace('T', ' ');
+        img.dateToApply = exifDateTime;
+        img.dateStr = exifDateTime;
+        img.isModified = true;
+      }
+
+      if (applyGPS) {
+        img.latToApply = newLat;
+        img.lngToApply = newLng;
+        img.lat = newLat;
+        img.lng = newLng;
+        img.isModified = true;
+      }
+    });
+
+    renderVisualTable();
+    ids.forEach(id => {
+      const cb = document.querySelector(`.row-checkbox[value="${id}"]`);
+      if (cb) cb.checked = true;
+    });
+    updateVisualSelectionCount();
+
+    if (focusedImageId !== null) focusImage(focusedImageId);
+
+    btn.innerHTML = origHtml;
+    showToast(`${ids.length} photo(s) préparées en mémoire. Cliquez ensuite sur "Générer Script Modif" !`, "success");
+  }, 50);
+}
+
+// --- Visual Mode: Script Generators ---
+
+async function downloadBatFile(content, filename) {
+  // Tentative via File System Access API (Dialogue "Enregistrer sous")
+  if ('showSaveFilePicker' in window) {
+    try {
+      const handle = await window.showSaveFilePicker({
+        suggestedName: filename,
+        types: [{
+          description: 'Script Batch Windows',
+          accept: { 'text/plain': ['.bat'] },
+        }],
+      });
+      const writable = await handle.createWritable();
+      await writable.write(content);
+      await writable.close();
+      showToast(`Fichier enregistré : ${filename}`, "success");
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') return; // L'utilisateur a annulé
+      console.warn("showSaveFilePicker a échoué, repli sur le téléchargement classique", err);
+    }
+  }
+
+  // Repli classique (Téléchargement forcé dans "Téléchargements")
+  const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = batFileName;
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  showToast(`Script généré : ${filename}`, "success");
+}
+
+function getTimestamp() {
+  const now = new Date();
+  return `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
+}
+
+function getBatSecurityCheck(targetFolder) {
+  // Extract just the last folder name for comparison
+  const targetFolderName = targetFolder.split(/[\\/]/).filter(Boolean).pop();
+  // Uses %variable% syntax (NOT !variable!) — compatible with -o! in exiftool commands
+  return `:: --- VERIFICATION DE SECURITE DU DOSSIER CIBLE ---\r\nfor %%I in (".") do set "currentFolder=%%~nxI"\r\nset "targetFolderName=${targetFolderName}"\r\nset "targetFullPath=${targetFolder}"\r\n\r\nif /i not "%currentFolder%"=="%targetFolderName%" (\r\n    color 0c\r\n    echo.\r\n    echo [ERREUR DE SECURITE CRITIQUE]\r\n    echo.\r\n    echo Ce script a ete concu SPECIFIQUEMENT pour le dossier :\r\n    echo -^> "%targetFullPath%"\r\n    echo.\r\n    echo Mais vous l'avez execute depuis le dossier :\r\n    echo -^> "%cd%"\r\n    echo.\r\n    echo Par securite, le traitement est annule.\r\n    echo Merci de deplacer ce fichier .bat dans le BON dossier.\r\n    echo.\r\n    pause\r\n    exit /b\r\n)\r\necho Dossier verifie : OK\r\necho.\r\n:: --- FIN SECURITE ---\r\n`;
+}
+
+async function generateVisualScript() {
+  const targetFolder = document.getElementById('visualFolderPathInput').value.trim();
+  const keepOriginals = document.getElementById('visualKeepOriginals').checked;
+
+  if (!targetFolder) {
+    showToast("Vous devez d'abord coller le chemin d'origine du dossier (Étape 1).", "error");
+    return;
+  }
+
+  const ids = getSelectedImageIds();
+  if (ids.length === 0) return;
+
+  const modifiedImages = ids.map(id => multiImages.find(i => i.id === id)).filter(img => img && img.isModified);
+
+  if (modifiedImages.length === 0) {
+    showToast("Aucune photo sélectionnée n'a été modifiée. Faites 'Appliquer' d'abord.", "warning");
+    return;
+  }
+
+  // Detect what types of modifications were applied
+  let hasDate = modifiedImages.some(img => img.dateToApply);
+  let hasGPS = modifiedImages.some(img => img.latToApply !== null && img.lngToApply !== null);
+
+  let cleanFolder = targetFolder;
+  if (!cleanFolder.endsWith('\\')) cleanFolder += '\\';
+
+  // NOTE: PAS de enabledelayedexpansion ici ! Le ! de -o! serait consommé par le batch
+  let batContent = `@echo off\r\nchcp 65001 >nul\r\n\r\necho ========================================================\r\necho   GeoPhoto Editor - Script Visuel (${modifiedImages.length} photos)\r\necho ========================================================\r\necho.\r\necho Options : ${keepOriginals ? 'GARDER les originaux (copie _geophoto)' : 'ECRASER les originaux'}\r\necho Modifs  : ${hasDate ? '[X]' : '[ ]'} Date   ${hasGPS ? '[X]' : '[ ]'} GPS\r\necho.\r\n`;
+
+  // Add security check
+  batContent += getBatSecurityCheck(targetFolder);
+
+  batContent += `echo Appuyez sur une touche pour commencer le traitement...\r\npause >nul\r\necho.\r\necho Traitement en cours... Veuillez patienter !\r\necho.\r\n\r\n`;
+
+  modifiedImages.forEach(img => {
+    let params = [];
+
+    if (img.dateToApply) {
+      params.push(`-DateTimeOriginal="${img.dateToApply}" -CreateDate="${img.dateToApply}"`);
+    }
+
+    if (img.latToApply !== null && img.lngToApply !== null) {
+      const latRef = img.latToApply >= 0 ? 'N' : 'S';
+      const lonRef = img.lngToApply >= 0 ? 'E' : 'W';
+      params.push(`-GPSLatitude="${Math.abs(img.latToApply)}" -GPSLatitudeRef="${latRef}" -GPSLongitude="${Math.abs(img.lngToApply)}" -GPSLongitudeRef="${lonRef}"`);
+    }
+
+    // Build the command per file
+    if (keepOriginals) {
+      // Strategy: copy original to _geophoto, then modify the copy in-place
+      const nameParts = img.name.split('.');
+      const ext = nameParts.pop();
+      const baseName = nameParts.join('.');
+      batContent += `copy /Y "${cleanFolder}${img.name}" "${cleanFolder}${baseName}_geophoto.${ext}"\r\n`;
+      batContent += `exiftool -overwrite_original ${params.join(' ')} "${cleanFolder}${baseName}_geophoto.${ext}"\r\n`;
+    } else {
+      // Overwrite original
+      batContent += `exiftool -overwrite_original ${params.join(' ')} "${cleanFolder}${img.name}"\r\n`;
+    }
+  });
+
+  batContent += `\r\necho.\r\necho ========================================================\r\necho   TRAITEMENT TERMINE AVEC SUCCES ! (${modifiedImages.length} photos)\r\necho ========================================================\r\npause\r\n`;
+
+  // Build filename: !_visuel_[folder]_copie_date_gps_20260302_2329.bat
+  const safeFolderName = targetFolder.replace(/[^a-z0-9]/gi, '_');
+  let tags = [];
+  if (keepOriginals) tags.push("copie"); else tags.push("ecrase");
+  if (hasDate) tags.push("date");
+  if (hasGPS) tags.push("gps");
+  const batFileName = `!_visuel_[${safeFolderName}]_${tags.join('_')}_${getTimestamp()}.bat`;
+
+  await downloadBatFile(batContent, batFileName);
+}
+
+async function generateVisualSecurityScript() {
+  const targetFolder = document.getElementById('visualFolderPathInput').value.trim();
+  const keepOriginals = document.getElementById('visualKeepOriginals').checked;
+
+  if (!targetFolder) {
+    showToast("Vous devez d'abord coller le chemin d'origine du dossier (Étape 1).", "error");
+    return;
+  }
+
+  const ids = getSelectedImageIds();
+  if (ids.length === 0) return;
+
+  let cleanFolder = targetFolder;
+  if (!cleanFolder.endsWith('\\')) cleanFolder += '\\';
+
+  // NOTE: PAS de enabledelayedexpansion ici !
+  let batContent = `@echo off\r\nchcp 65001 >nul\r\n\r\necho ========================================================\r\necho   GeoPhoto Editor - NETTOYAGE EXIF TOTAL (${ids.length} photos)\r\necho ========================================================\r\necho.\r\necho ATTENTION : Ce script va SUPPRIMER DEFINITIVEMENT\r\necho TOUTES les metadonnees (Dates, GPS, Appareil, etc.)\r\necho des photos selectionnees.\r\necho.\r\necho Option : ${keepOriginals ? 'GARDER les originaux (copie _geophoto)' : 'ECRASER les originaux (Attention !)'}\r\necho.\r\n`;
+
+  // Add security check
+  batContent += getBatSecurityCheck(targetFolder);
+
+  batContent += `echo Appuyez sur une touche pour PURIFIER les fichiers...\r\npause >nul\r\necho.\r\necho Nettoyage en cours...\r\necho.\r\n\r\n`;
+
+  ids.forEach(id => {
+    const img = multiImages.find(i => i.id === id);
+    if (!img) return;
+
+    if (keepOriginals) {
+      // Strategy: copy original to _geophoto, then strip ALL exif from the copy
+      const nameParts = img.name.split('.');
+      const ext = nameParts.pop();
+      const baseName = nameParts.join('.');
+      batContent += `copy /Y "${cleanFolder}${img.name}" "${cleanFolder}${baseName}_geophoto.${ext}"\r\n`;
+      batContent += `exiftool -overwrite_original -all= "${cleanFolder}${baseName}_geophoto.${ext}"\r\n`;
+    } else {
+      // Overwrite original — strip all exif in-place
+      batContent += `exiftool -overwrite_original -all= "${cleanFolder}${img.name}"\r\n`;
+    }
+
+    img.isSecured = true;
+    img.lat = null;
+    img.lng = null;
+  });
+
+  batContent += `\r\necho.\r\necho ========================================================\r\necho   NETTOYAGE TERMINE AVEC SUCCES ! (${ids.length} photos)\r\necho   Toutes les metadonnees ont ete supprimees.\r\necho ========================================================\r\npause\r\n`;
+
+  const safeFolderName = targetFolder.replace(/[^a-z0-9]/gi, '_');
+  const batFileName = `!_visuel_[${safeFolderName}]_${keepOriginals ? 'copie' : 'ecrase'}_purge_${getTimestamp()}.bat`;
+
+  await downloadBatFile(batContent, batFileName);
 }

@@ -1,15 +1,15 @@
 [Setup]
 ; Informations de base de l'application
 AppName=GeoPhoto Editor
-AppVersion=2.0.0
-AppPublisher=Votre Nom ou Entreprise
+AppVersion=3.0.0
+AppPublisher=Yves Balestra
 
 ; Dossier d'installation par défaut (Program Files)
 DefaultDirName={autopf}\GeoPhoto Editor
 DefaultGroupName=GeoPhoto Editor
 
 ; Nom du fichier d'installation généré (.exe)
-OutputBaseFilename=Installer_GeoPhoto_Editor_V2.0.0
+OutputBaseFilename=Installer_GeoPhoto_Editor_V3.0.0
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -33,6 +33,8 @@ Source: "manifest.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "icone_geophoto.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "icone_geophoto.png"; DestDir: "{app}"; Flags: ignoreversion
 Source: "README.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "capture_bureau*.jpg"; DestDir: "{app}"; Flags: ignoreversion
+Source: "capture_mobile*.png"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 ; NOUVEAU : Création du raccourci sur le bureau avec VOTRE icône

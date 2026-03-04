@@ -1,78 +1,96 @@
 # GeoPhoto Editor 📍📷
 
-**GeoPhoto Editor** est une application web évoluée en utilitaire logiciel complet (V2.0.0), permettant de visualiser, modifier, organiser et nettoyer les métadonnées (EXIF et GPS) de vos images. L'outil s'adapte à vos besoins grâce à deux modes distincts : un traitement unitaire rapide 100% navigateur, et un traitement de masse très puissant (Pilotant le moteur externe ExifTool via la génération sécurisée de scripts automatisés BATCH).
+**GeoPhoto Editor** est une application web évoluée en utilitaire logiciel complet (**V3.0.0**), permettant de visualiser, modifier, organiser et nettoyer les métadonnées (EXIF et GPS) de vos images. L'outil s'adapte à vos besoins grâce à trois modes de travail distincts.
 
-## 🚀 Fonctionnalités Principales (V2.0.0)
+## 🚀 Les 3 Modes de Travail (V3.0.0)
 
-À l'ouverture, l'application vous propose deux méthodes de travail :
-
-### 🌟 Mode 1 : Traitement d'une seule image (JPEG)
+### 🌟 Mode 1 : Traitement d'une seule image (JPEG uniquement)
 > [!IMPORTANT]
-> Le Mode 1 (image unique) reste totalement multiplateforme.
+> Le Mode 1 (image unique) est 100% exécuté dans le navigateur.
 
-Idéal pour une modification rapide et visuelle d'une seule photo.
+Idéal pour une modification ultra-rapide et visuelle d'une seule photo.
+*   👉 **Visualisation immédiate :** La carte interactive se centre automatiquement sur les coordonnées GPS existantes.
+*   👉 **Modification Intuitive :** Modifiez la position d'un simple clic sur la carte ou via la barre de recherche.
+*   👉 **Export Direct :** Téléchargez instantanément la photo mise à jour.
 
-👉 **Visualisation immédiate :** La carte interactive se centre automatiquement sur les coordonnées GPS existantes.
+### 🌟 Mode 2 : Sélection Visuelle (Nouveauté V3 - JPEG uniquement)
+> [!TIP]
+> **Le meilleur des deux mondes :** L'ergonomie du Mode 1 alliée à la puissance du traitement par lot.
 
-👉 **Modification Intuitive :** Modifiez la position d'un simple clic sur la carte, via la barre de recherche, ou utilisez votre géolocalisation actuelle.
+Ce mode permet de parcourir un dossier complet, de sélectionner visuellement les photos et de préparer un script de modification global.
+1.  **Ouverture du Dossier :** Indiquez le chemin de votre dossier local (Etape 1) puis "Parcourez" ce même dossier (Etape 2) pour charger les miniatures dans le tableau.
+2.  **Sélection :** Cochez dans le tableau les photos que vous souhaitez modifier.
+3.  **Focus & Aperçu :** Cliquez sur une ligne pour voir la photo en grand et localiser son emplacement actuel sur la carte.
+4.  **Préparation :** Modifiez la Date ou la Position GPS dans le panneau de droite, puis cliquez sur **"Appliquer (En mémoire)"**. Une étiquette verte "Modifié" apparaît devant le nom du fichier pour confirmer la prise en compte.
+5.  **Génération & Exécution :** Une fois votre sélection terminée, générez le script `.bat`. Grâce à la **V3**, une fenêtre "Enregistrer sous" vous permet de choisir directement votre dossier de photos. Double-cliquez ensuite sur le fichier pour appliquer les modifications.
 
-👉 **Confidentialité totale :** Le traitement s'effectue intégralement en local dans votre navigateur.
-
-
-### 🌟 Mode 2 : Traitement par Lot (Dossier complet, Tous formats RAW/JPEG/PNG)
+### 🌟 Mode 3 : Traitement par Lot Massif (Tous formats : RAW, JPEG, PNG...)
 > [!IMPORTANT]
-> **Fonctionnalité exclusive à Windows :** Le mode par lot génère des scripts d'automatisation système spécifiques (`.bat`) qui ne peuvent s'exécuter que sur un environnement Microsoft Windows.
-Conçu pour traiter des centaines de photos d'un retour de voyage. Ce mode génère à la demande des fichiers de commandes (.bat) sécurisés pilotant le célèbre moteur **ExifTool**. Il est architecturé en 3 Onglets :
+> **Moteur Industriel :** Ce mode pilote directement le moteur **ExifTool** via des scripts BATCH sécurisés pour traiter des centaines de fichiers instantanément.
 
-👉 **Onglet 1 : MÉTADONNÉES**
-*   Appliquez une date/heure commune ou une position géographique à toutes les images d'un même dossier en quelques secondes.
+C'est le mode le plus puissant, capable de traiter les formats professionnels (RAW) :
+*   👉 **Onglet MÉTADONNÉES :** Forcez une date/heure ou une position GPS identique sur TOUT le dossier.
+*   👉 **Onglet ORGANISATION :** Renommage automatique par date (ex: `20261231_1.jpg`) et classement en sous-dossiers par Année/Mois.
+*   👉 **Onglet UTILITAIRES :** Extraction CSV (Listing Excel) ou "Kärcher EXIF" (Anonymat total par effacement des balises).
 
-👉 **Onglet 2 : ORGANISATION** (Système de Classement)
-*   **Renommage :** Renommez automatiquement des centaines de photos avec leur date de prise de vue interne (ex: `20261231_1.jpg`).
-*   **Classement Automatique :** Ventilez automatiquement les photos en vrac vers des sous-dossiers par "Année", ou par "Année / Mois".
+---
 
-👉 **Onglet 3 : UTILITAIRES** (Anonymat & Lecture)
-*   **Extracteur CSV :** Analysez tout votre dossier pour faire ressortir un tableau de bord lisible sous Excel (Noms, Dimensions, Dates, GPS apparents).
-*   **Effacement Total "Le Kärcher EXIF" :** Pointez, cliquez et détruisez d'un seul coup toutes les balises cachées d'un lot complet (Appareil photo, Géolocalisation, Logiciels, Dates) en vue d'une publication 100% anonyme sur Internet.
+## 🏷️ Nomenclature Intelligente des Scripts BATCH
+L'application génère **dynamiquement** le nom du fichier `.bat` en fonction des actions choisies pour éviter toute confusion dans vos dossiers.
 
-*Note Importante : Pour tout le mode lot, le logiciel est conçu pour la sécurité de vos données. L'option "Conserver les originaux" (activée par défaut) forcera la création de doublons purifiés ou classés (`_geophoto.jpg`), vos originaux ne seront jamais écrasés par erreur.*
+### Mode Visuel (V3) :
+* `!_visuel_[Dossier]_copie_date_gps_timestamp.bat` *(Mode sélection visuelle avec sauvegarde)*
+* `!_visuel_[Dossier]_ecrase_purge_timestamp.bat` *(Nettoyage EXIF sur sélection)*
 
-#### 🏷️ Nomenclature Intelligente des Scripts BATCH
-Afin d'éviter la confusion lors de générations multiples de scripts dans votre dossier "Téléchargements", l'application génère **dynamiquement** le nom du fichier `.bat` en fonction des actions cochées. 
-Chaque fichier BATCH de traitement par lot adoptera une syntaxe claire :
+### Mode Massif :
 * `!_organisation_[Dossier]_copie_renomme.bat` *(Conservation de l'original + Renommage Daté)*
-* `!_organisation_[Dossier]_ecrase_classe-A-M.bat` *(Fichiers déplacés/écrasés + Classés par Année-Mois)*
-* `!_traitement_lot_[Dossier]_copie_date_gps.bat` *(Conservation de l'original + Forçage GPS + Forçage Date)*
-* `!_nettoyage_exif_[Dossier]_copie_purge.bat` *(Exécution du Kärcher Anti-Métadonnées)*
+* `!_traitement_lot_[Dossier]_copie_date_gps.bat` *(Forçage GPS + Date sur tout le lot)*
+* `!_nettoyage_exif_[Dossier]_[Timestamp].bat` *(Exécution du Kärcher Anti-Métadonnées)*
+* `!_extraction_csv_[Dossier].bat` *(Listing complet vers Excel)*
 
 > [!WARNING]
-> **Espace Disque Requis :** Le mode "Sécurité : Conserver les originaux" (qui déclenche les tags `_copie_`) va dupliquer intégralement vos fichiers. Avant de lancer un script sur un dossier contenant des Gigaoctets de photos (Disque dur portable, grosse Clé USB, etc.), assurez-vous d'avoir au moins l'équivalent du volume d'origine en espace libre. Le processus risque d'échouer mathématiquement si l'espace vient à manquer.
+> **Espace Disque Requis :** Le mode "Sécurité : Conserver les originaux" va dupliquer vos fichiers. Assurez-vous d'avoir assez d'espace libre sur votre disque avant de lancer un gros traitement par lot.
 
-## 🛠️ Installation (Windows)
+---
 
-L'installation de GeoPhoto Editor V2.0.0 s'effectue simplement via l'installeur exécutable fourni (.exe) :
-1. L'installeur installe l'interface web, crée vos raccourcis sur le bureau et le menu Démarrer.
-2. Il ajoute **automatiquement** son propre dossier d'installation à la variable système globale `PATH` de Windows.
+## 🛠️ Installation & Configuration (Windows)
 
-### ⚙️ Prérequis Strict (Mode par Lot) : Installation d'ExifTool
-GeoPhoto Editor fait le choix de **ne pas embarquer** le moteur ExifTool dans son installateur, afin de vous garantir l'usage de la dernière version en date et d'alléger le fichier.
-Pour que les scripts BATCH du Mode 2 fonctionnent, ExifTool est indispensable :
-1. Téléchargez la version Windows (fichier `.zip`) depuis le site officiel : [exiftool.org](https://exiftool.org/)
-2. Décompressez l'intégralité du fichier ZIP. Vous y trouverez un exécutable `exiftool(-k).exe` et un dossier indispensable nommé `exiftool_files`.
-3. Renommez le fichier `exiftool(-k).exe` pour qu'il s'appelle exactement **`exiftool.exe`**.
-4. **Où l'installer ?** Nous vous conseillons de créer un dossier simple à la racine de votre disque dur, comme par exemple **`C:\ExifTool\`** (à l'image de ce qui se fait souvent pour `ffmpeg`). Placez le fichier `exiftool.exe` **ET** le dossier `exiftool_files` à cet endroit. Évitez le dossier _Program Files_ de GeoPhoto qui nécessite des droits administrateurs pénibles pour y glisser des fichiers.
-5. **Déclaration système (Variable PATH) :** Pour que Windows (et donc GeoPhoto) trouve ExifTool, vous devez déclarer cet emplacement :
+### ⚙️ 1. Installation de l'Application
+L'installation s'effectue via l'installeur exécutable fourni (`.exe`) :
+1. Il installe l'interface, crée les raccourcis Bureau/Démarrer.
+2. Il ajoute **automatiquement** son dossier d'installation à votre variable système `PATH`.
+
+### ⚙️ 2. Prérequis Strict : ExifTool (Modes 2 & 3)
+GeoPhoto Editor nécessite le moteur **ExifTool** pour les traitements de masse :
+1. Téléchargez la version Windows sur [exiftool.org](https://exiftool.org/).
+2. Décompressez le ZIP et renommez `exiftool(-k).exe` en **`exiftool.exe`**.
+3. **Conseil :** Créez un dossier **`C:\ExifTool\`** et placez-y le fichier `exiftool.exe` ainsi que son dossier `exiftool_files`.
+4. **Déclaration système (Variable PATH) :** Pour que Windows (et donc GeoPhoto) trouve ExifTool, vous devez déclarer cet emplacement :
    * Tapez _"Variables d'environnement"_ dans le menu Démarrer de Windows.
    * Cliquez sur _"Modifier les variables d'environnement système"_.
    * Dans la fenêtre, cliquez sur le bouton _"Variables d'environnement"_.
-   * Sélectionnez la ligne `Path` puis _Modifier_ > _Nouveau_ et ajoutez votre chemin (ex: `C:\ExifTool\`). Validez tout par _OK_.
+   * Sélectionnez la ligne `Path` (dans Variables utilisateur ou système) puis _Modifier_ > _Nouveau_ et ajoutez votre chemin (ex: `C:\ExifTool\`). 
+   * Validez tout par _OK_.
 
-## ⚙️ Technologies Utilisées
-*   **Frontend Web** : HTML5, CSS3, JavaScript Vanilla.
-*   **Cartographie** : Leaflet.js (OpenStreetMap) et API Nominatim.
-*   **Moteurs EXIF** : 
-    *   *Piexifjs* pour la manipulation binaire autonome des JPEG.
-    *   *ExifTool* (de Phil Harvey) pour l'impressionnante architecture système générative de scripts BATCH (Opérations complexes de tri, renommage conditionnel et nettoyage total).
+> [!IMPORTANT]
+> **Dépannage :** Si malgré l'installation, le logiciel indique que `exiftool` n'est pas reconnu :
+> 1. **Redémarrage requis :** Fermez et rouvrez votre fenêtre de commande ou l'application pour que Windows prenne en compte le nouveau `Path`.
+> 2. **Vérification manuelle :** Retournez dans les "Variables d'environnement" pour vous assurer que le chemin vers votre dossier `exiftool` est bien présent et sans faute de frappe.
 
 ---
-*Version 2.0.0 - Développé par Yves Balestra.*
+
+## 🛡️ Sécurité & Confidentialité
+*   **Protection des originaux :** L'option "Conserver les originaux" crée des copies `_geophoto` pour ne jamais écraser vos fichiers sources par erreur.
+*   **100% Privé :** Aucune photo n'est envoyée sur un serveur. Tout le traitement est local à votre ordinateur.
+
+---
+
+## ⚙️ Technologies Utilisées
+*   **Frontend** : HTML5, CSS3, JavaScript Vanilla.
+*   **Cartographie** : Leaflet.js (OpenStreetMap) & API Nominatim.
+*   **Moteurs EXIF** : 
+    *   *Piexifjs* (Manipulation binaire directe pour le Mode 1).
+    *   *ExifTool* (de Phil Harvey) pour la génération de scripts systèmes BATCH (Modes 2 & 3).
+
+---
+*Version 3.0.0 - 04 Mars 2026 - Développé par Yves Balestra.*

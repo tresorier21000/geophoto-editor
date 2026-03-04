@@ -1,4 +1,4 @@
-const CACHE_NAME = 'geophoto-v9';
+const CACHE_NAME = 'geophoto-v3.0.0';
 const urlsToCache = [
   './',
   './index.html',
@@ -15,6 +15,7 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
+  self.skipWaiting(); // Forcer l'installation immédiate
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -25,18 +26,22 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Stratégie "Network-First" pour les fichiers locaux : essayer le réseau d'abord, cache en secours
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then(response => {
-        // Si le fichier est dans le cache, on le retourne
-        if (response) {
-          return response;
-        }
-        // Sinon, on le télécharge depuis internet
-        return fetch(event.request);
+        // Mettre à jour le cache avec la nouvelle version
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, responseClone);
+        });
+        return response;
+      })
+      .catch(() => {
+        // Si pas de réseau (hors ligne), utiliser le cache
+        return caches.match(event.request);
       })
   );
-
 });
 
 self.addEventListener('activate', event => {
@@ -55,10 +60,4 @@ self.addEventListener('activate', event => {
       return self.clients.claim();
     })
   );
-});
-
-// Facultatif : forcer le SW à s'installer immédiatement sans attendre que l'ancien libère la page
-self.addEventListener('install', event => {
-  self.skipWaiting();
-  // ... le reste de votre code d'installation (addAll) existant va au-dessus de ça
 });

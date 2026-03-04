@@ -1121,3 +1121,135 @@ button:active {
     transform: translateX(100%);
   }
 }
+
+/* === Multi-Image Batch Mode (V3) === */
+.file-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.file-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.file-table tbody tr.selected-row {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+.file-table tbody tr.focus-row {
+  background-color: rgba(16, 185, 129, 0.1);
+  border-left: 3px solid #10b981;
+}
+
+.file-table td {
+  padding: 0.75rem;
+  vertical-align: middle;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+.status-badge.modified {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-badge.secured {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.upload-area-mini:hover {
+  border-color: var(--primary) !important;
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* --- Mode 2: File Table Styles --- */
+
+.file-table tbody tr {
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.file-table tbody tr:hover {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.file-table tbody tr.focus-row {
+  background: rgba(139, 92, 246, 0.15) !important;
+  border-left: 3px solid #8b5cf6;
+}
+
+.file-table td {
+  padding: 0.6rem 0.75rem;
+  vertical-align: middle;
+}
+
+/* Mode cards hover */
+.mode-card:not(:disabled):hover {
+  border-color: var(--primary) !important;
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.mode-card:not(:disabled):active {
+  transform: translateY(-1px);
+}
+
+/* Folder path validated state */
+input.folder-validated {
+  color: #10b981 !important;
+  -webkit-text-fill-color: #10b981 !important;
+  border-color: #10b981 !important;
+  border-width: 2px !important;
+  background-color: #0f172a !important;
+}
+
+/* Override browser autofill white/yellow background */
+input.folder-validated:-webkit-autofill,
+input.folder-validated:-webkit-autofill:hover,
+input.folder-validated:-webkit-autofill:focus,
+#visualFolderPathInput:-webkit-autofill,
+#visualFolderPathInput:-webkit-autofill:hover,
+#visualFolderPathInput:-webkit-autofill:focus,
+#batchFolderTextInput:-webkit-autofill,
+#batchFolderTextInput:-webkit-autofill:hover,
+#batchFolderTextInput:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px #0f172a inset !important;
+  -webkit-text-fill-color: #10b981 !important;
+  background-color: #0f172a !important;
+  border-color: #10b981 !important;
+  caret-color: #10b981 !important;
+}
+
+/* Also ensure non-validated autofill stays dark */
+#visualFolderPathInput,
+#batchFolderTextInput {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+/* Visual Map height */
+#visualMap {
+  height: 100%;
+  width: 100%;
+  min-height: 220px;
+  z-index: 1;
+}
+
+/* Responsive: stack columns on mobile */
+@media (max-width: 768px) {
+  #visualContentSection {
+    grid-template-columns: 1fr !important;
+  }
+}
