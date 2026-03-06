@@ -1,6 +1,6 @@
 # GeoPhoto Editor 📍📷
 
-**GeoPhoto Editor** est une application web évoluée en utilitaire logiciel complet (**V3.0.0**), permettant de visualiser, modifier, organiser et nettoyer les métadonnées (EXIF et GPS) de vos images. L'outil s'adapte à vos besoins grâce à trois modes de travail distincts.
+**GeoPhoto Editor** est une application web évoluée en utilitaire logiciel complet (**V3.0.0**), permettant de visualiser, modifier, organiser et/ou nettoyer les métadonnées de vos images (en cas de publication sur le net, par exemple). L'outil s'adapte à vos besoins grâce à trois modes de travail distincts.
 
 ## 🚀 Les 3 Modes de Travail (V3.0.0)
 
@@ -31,7 +31,7 @@ Ce mode permet de parcourir un dossier complet, de sélectionner visuellement le
 > [!IMPORTANT]
 > **Moteur Industriel :** Ce mode pilote directement le moteur **ExifTool** via des scripts BATCH sécurisés pour traiter des centaines de fichiers instantanément.
 
-C'est le mode le plus puissant, capable de traiter les formats professionnels (RAW) :
+C'est le mode le plus puissant, capable de traiter tous les formats professionnels (RAW,...) :
 *   👉 **Onglet MÉTADONNÉES :** Forcez une date/heure ou une position GPS identique sur TOUT le dossier.
 *   👉 **Onglet ORGANISATION :** Renommage automatique par date (ex: `20261231_1.jpg`) et classement en sous-dossiers par Année/Mois.
 *   👉 **Onglet UTILITAIRES :** Extraction CSV (Listing Excel) ou "Kärcher EXIF" (Anonymat total par effacement des balises).
