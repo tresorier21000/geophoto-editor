@@ -18,7 +18,7 @@ Idéal pour une modification ultra-rapide et visuelle d'une seule photo.
 > **Le meilleur des deux mondes :** L'ergonomie du Mode 1 alliée à la puissance du traitement par lot.
 
 > [!IMPORTANT]
-> **Moteur Industriel :** Ce mode pilote également le moteur **ExifTool** via des scripts BATCH sécurisés pour traiter vos fichiers sélectionnés instantanément.
+> **Moteur Industriel :** Ce mode pilote directment le moteur **ExifTool** via des scripts BATCH sécurisés pour traiter vos fichiers sélectionnés instantanément.
 
 Ce mode permet de parcourir un dossier complet, de sélectionner visuellement les photos et de préparer un script de modification global.
 1.  **Ouverture du Dossier :** Indiquez le chemin de votre dossier local (Etape 1) puis "Parcourez" ce même dossier (Etape 2) pour charger les miniatures dans le tableau.
