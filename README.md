@@ -17,6 +17,9 @@ Idéal pour une modification ultra-rapide et visuelle d'une seule photo.
 > [!TIP]
 > **Le meilleur des deux mondes :** L'ergonomie du Mode 1 alliée à la puissance du traitement par lot.
 
+> [!IMPORTANT]
+> **Moteur Industriel :** Ce mode pilote également le moteur **ExifTool** via des scripts BATCH sécurisés pour traiter vos fichiers sélectionnés instantanément.
+
 Ce mode permet de parcourir un dossier complet, de sélectionner visuellement les photos et de préparer un script de modification global.
 1.  **Ouverture du Dossier :** Indiquez le chemin de votre dossier local (Etape 1) puis "Parcourez" ce même dossier (Etape 2) pour charger les miniatures dans le tableau.
 2.  **Sélection :** Cochez dans le tableau les photos que vous souhaitez modifier.
@@ -65,7 +68,7 @@ GeoPhoto Editor nécessite le moteur **ExifTool** pour les traitements de masse 
 1. Téléchargez la version Windows sur [exiftool.org](https://exiftool.org/).
 2. Décompressez le ZIP et renommez `exiftool(-k).exe` en **`exiftool.exe`**.
 3. **Conseil :** Créez un dossier **`C:\ExifTool\`** et placez-y le fichier `exiftool.exe` ainsi que son dossier `exiftool_files`.
-4. **Déclaration système (Variable PATH) :** Pour que Windows (et donc GeoPhoto) trouve ExifTool, vous devez déclarer cet emplacement :
+4. **Déclaration système (Variable PATH) :** Pour que Windows (et donc GeoPhoto) trouve ExifTool, vous devez déclarer (ou vérifier) cet emplacement :
    * Tapez _"Variables d'environnement"_ dans le menu Démarrer de Windows.
    * Cliquez sur _"Modifier les variables d'environnement système"_.
    * Dans la fenêtre, cliquez sur le bouton _"Variables d'environnement"_.
