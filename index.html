@@ -48,8 +48,29 @@
     <main class="main-card">
       <!-- ÉCRAN DE CHOIX (V2) -->
       <div id="modeChoiceSection" class="mode-choice" style="padding: 2rem 0;">
-        <h2 style="text-align: center; margin-bottom: 2.5rem; font-size: 1.5rem; color: var(--text);">Que souhaitez-vous
+        <h2 style="text-align: center; margin-bottom: 1.5rem; font-size: 1.5rem; color: var(--text);">Que souhaitez-vous
           faire ?</h2>
+
+        <!-- AJOUT V3.1 : Paramètres de téléchargement globaux -->
+        <div class="global-settings"
+          style="margin-bottom: 2.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 1.5rem 0;">
+          <label
+            style="display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; background: rgba(59, 130, 246, 0.05); padding: 0.75rem 1.25rem; border-radius: 50px; border: 1px solid rgba(59, 130, 246, 0.2); transition: all 0.2s ease;"
+            class="setting-label">
+            <div class="switch">
+              <input type="checkbox" id="alwaysShowSaveAs" onchange="toggleSavePreference()">
+              <span class="slider round"></span>
+            </div>
+            <span style="font-size: 0.95rem; font-weight: 600; color: var(--text-main);">Ouvrir la fenêtre "Enregistrer
+              sous" systématiquement</span>
+            <span class="help-icon"
+              onclick="event.preventDefault(); showToast('<strong>OFF (Par défaut Chrome)</strong> : Les fichiers sont enregistrés immédiatement dans votre dossier de téléchargement habituel.<br><br><strong>ON</strong> : Une fenêtre s\'ouvrira à chaque fois pour choisir le dossier de destination.', 'info');"
+              style="background: var(--primary); color: white; width: 22px; height: 22px; font-size: 0.8rem; border: none;"
+              title="Aide sur le mode de téléchargement">?</span>
+          </label>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0; text-align: center;">Note : Sur les
+            navigateurs autres que Chrome, cette fenêtre s'ouvrira par sécurité.</p>
+        </div>
         <div class="mode-cards"
           style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem;">
 
@@ -944,7 +965,7 @@
     <div id="zone-bouton-windows" class="desktop-download-wrapper"
       style="text-align: center; margin: 2rem 0 1rem 0; display: none;">
 
-      <a href="https://github.com/tresorier21000/geophoto-editor/releases/download/V3.0.0/Installer_GeoPhoto_Editor_V3.0.0.exe"
+      <a href="https://github.com/tresorier21000/geophoto-editor/releases/download/V3.1.0/Installer_GeoPhoto_Editor_V3.1.0.exe"
         class="btn-telechargement">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; vertical-align: middle;">
@@ -981,7 +1002,7 @@
 
 
     <footer class="app-footer">
-      <p>Version 3.0.0 - 04 Mars 2026</p>
+      <p>Version 3.1.0 - 03 Avril 2026</p>
       <p>Développé par <a href="mailto:yves.balestra@gmail.com">yves.balestra@gmail.com</a></p>
     </footer>
   </div>
@@ -1002,10 +1023,27 @@
       <div class="modal-body">
 
         <p style="margin-bottom: 24px; font-size: 0.95rem; line-height: 1.5;">
-          <strong>GeoPhoto Editor V3</strong> propose trois méthodes de travail distinctes selon vos besoins : le
+          <strong>GeoPhoto Editor V3.1.0</strong> propose trois méthodes de travail distinctes selon vos besoins : le
           <strong>Mode Simple</strong> (unitaire), la <strong>Sélection Visuelle</strong> (gestion par tableau) et le
           <strong>Traitement par Lot</strong> (moteur industriel ExifTool).
         </p>
+
+        <h3
+          style="color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 16px;">
+          🚀 NOUVEAU : Préférences de Téléchargement</h3>
+
+        <section class="help-section" style="margin-bottom: 24px;">
+          <p style="font-size: 0.9rem; margin-bottom: 12px;">Vous pouvez désormais choisir comment l'application
+            enregistre vos fichiers (bouton en haut de l'écran d'accueil) :</p>
+          <ul>
+            <li><strong>OFF (Mode Direct)</strong> : Idéal sur <strong>Chrome/Edge</strong>. Le fichier est envoyé
+              immédiatement dans votre dossier "Téléchargements" habituel sans interruption.</li>
+            <li><strong>ON (Fenêtre Enregistrer-sous)</strong> : Ouvre systématiquement la fenêtre Windows pour vous
+              laisser choisir le dossier (ex: mettre le script .bat directement avec vos photos).</li>
+            <li><em>Note :</em> Sur les autres navigateurs (Safari, Firefox), la fenêtre s'ouvrira par défaut pour
+              garantir le bon emplacement du fichier.</li>
+          </ul>
+        </section>
 
         <h3
           style="color: var(--primary); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 16px;">
@@ -1027,7 +1065,7 @@
 
         <div
           style="line-height: 1.5; background-color: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 12px; margin-bottom: 20px; border-radius: 4px; font-size: 0.85rem; color: #d1d5db;">
-          <strong>🚀 Puissance industrielle :</strong> Ce mode utilise également <strong>ExifTool</strong> pour traiter
+          <strong>🚀 Puissance industrielle :</strong> Ce mode utilise <strong>ExifTool</strong> pour traiter
           vos photos sélectionnées instantanément via un script BATCH.
         </div>
 
@@ -1056,7 +1094,7 @@
 
         <div
           style="line-height: 1.5; background-color: rgba(245, 158, 11, 0.1); border-left: 4px solid #f59e0b; padding: 12px; margin-bottom: 20px; border-radius: 4px; font-size: 0.85rem; color: #d1d5db;">
-          <strong>🚀 Puissance industrielle :</strong> Ce mode utilise <strong>ExifTool</strong> pour traiter des
+          <strong>🚀 Puissance industrielle :</strong> Ce mode utilise également <strong>ExifTool</strong> pour traiter des
           centaines de fichiers (y compris les formats photo professionnels <strong>RAW</strong>) instantanément via un script
           BATCH.
         </div>

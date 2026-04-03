@@ -4,6 +4,32 @@ let originalImageDataUrl;
 let originalFileName = "image";
 let map;
 let marker;
+let isChromium = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+
+// ==========================================
+// V3.1 : GESTION DES PRÉFÉRENCES DE TÉLÉCHARGEMENT
+// ==========================================
+function initSavePreference() {
+  const pref = localStorage.getItem('alwaysShowSaveAs');
+  const checkbox = document.getElementById('alwaysShowSaveAs');
+  if (checkbox) {
+    // Par défaut false (Téléchargement direct sur Chrome)
+    checkbox.checked = pref === 'true';
+  }
+}
+
+function toggleSavePreference() {
+  const checkbox = document.getElementById('alwaysShowSaveAs');
+  localStorage.setItem('alwaysShowSaveAs', checkbox.checked);
+  if (checkbox.checked) {
+    showToast("Mode 'Enregistrer sous' activé : une fenêtre s'ouvrira à chaque sauvegarde.", "success");
+  } else {
+    showToast("Mode 'Direct' activé : les fichiers iront dans vos téléchargements par défaut.", "success");
+  }
+}
+
+// Initialisation au chargement
+window.addEventListener('DOMContentLoaded', initSavePreference);
 
 // DOM Elements
 const latInput = document.getElementById("lat");
@@ -426,11 +452,14 @@ async function saveImageWithDialog(dataUrl, suggestedName) {
   }
   const blob = new Blob([ab], { type: mimeType });
 
-  // Try File System Access API (Chrome/Edge)
-  if (window.showSaveFilePicker) {
+  const alwaysShowSaveAs = localStorage.getItem('alwaysShowSaveAs') === 'true';
+
+  // Try File System Access API (Chrome/Edge) if preferred OR if not Chromium (fallback to window per user request)
+  if (window.showSaveFilePicker && (alwaysShowSaveAs || !isChromium)) {
     try {
       const handle = await window.showSaveFilePicker({
         suggestedName: suggestedName,
+        startIn: 'downloads',
         types: [{
           description: 'Image JPEG',
           accept: { 'image/jpeg': ['.jpg', '.jpeg'] }
@@ -451,13 +480,14 @@ async function saveImageWithDialog(dataUrl, suggestedName) {
     }
   }
 
-  // Fallback: classic download
+  // Fallback: classic download (Direct to default folder)
   const a = document.createElement('a');
   a.href = dataUrl;
   a.download = suggestedName;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
+  showToast(`Image générée : ${suggestedName}`, 'success');
 }
 
 /**
@@ -1763,11 +1793,15 @@ function applyModificationsToSelected() {
 // --- Visual Mode: Script Generators ---
 
 async function downloadBatFile(content, filename) {
+  const alwaysShowSaveAs = localStorage.getItem('alwaysShowSaveAs') === 'true';
+
   // Tentative via File System Access API (Dialogue "Enregistrer sous")
-  if ('showSaveFilePicker' in window) {
+  // On l'utilise si la case est cochée OU si on n'est PAS sur Chromium (pour garantir le choix du dossier)
+  if ('showSaveFilePicker' in window && (alwaysShowSaveAs || !isChromium)) {
     try {
       const handle = await window.showSaveFilePicker({
         suggestedName: filename,
+        startIn: 'downloads',
         types: [{
           description: 'Script Batch Windows',
           accept: { 'text/plain': ['.bat'] },
@@ -1784,7 +1818,7 @@ async function downloadBatFile(content, filename) {
     }
   }
 
-  // Repli classique (Téléchargement forcé dans "Téléchargements")
+  // Repli classique (Téléchargement direct dans le dossier par défaut du navigateur)
   const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

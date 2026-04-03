@@ -1,8 +1,8 @@
 # GeoPhoto Editor 📍📷
 
-**GeoPhoto Editor** est une application web évoluée en utilitaire logiciel complet (**V3.0.0**), permettant de visualiser, modifier, organiser et/ou nettoyer les métadonnées de vos images (en cas de publication sur le net, par exemple). L'outil s'adapte à vos besoins grâce à trois modes de travail distincts.
+**GeoPhoto Editor** est une application web évoluée en utilitaire logiciel complet (**V3.1.0**), permettant de visualiser, modifier, organiser et/ou nettoyer les métadonnées de vos images (en cas de publication sur le net, par exemple). L'outil s'adapte à vos besoins grâce à trois modes de travail distincts.
 
-## 🚀 Les 3 Modes de Travail (V3.0.0)
+## 🚀 Les 3 Modes de Travail (V3.1.0)
 
 ### 🌟 Mode 1 : Traitement d'une seule image (JPEG uniquement)
 > [!IMPORTANT]
@@ -35,6 +35,21 @@ C'est le mode le plus puissant, capable de traiter tous les formats professionne
 *   👉 **Onglet MÉTADONNÉES :** Forcez une date/heure ou une position GPS identique sur TOUT le dossier.
 *   👉 **Onglet ORGANISATION :** Renommage automatique par date (ex: `20261231_1.jpg`) et classement en sous-dossiers par Année/Mois.
 *   👉 **Onglet UTILITAIRES :** Extraction CSV (Listing Excel) ou "Kärcher EXIF" (Anonymat total par effacement des balises).
+
+---
+
+## 💾 Gestion des Sauvegardes (Nouveauté V3.1)
+L'application propose désormais deux modes d'enregistrement pour vos fichiers (images et scripts `.bat`) :
+
+1.  **🚀 Mode Direct (Défaut sur Chrome/Edge) :**
+    *   Le fichier est envoyé immédiatement dans le dossier "Téléchargements" configuré dans votre navigateur.
+    *   C'est le mode le plus rapide pour travailler sans interruption.
+2.  **📂 Mode "Enregistrer sous" (Fenêtre de choix) :**
+    *   Une fenêtre système s'ouvre à chaque sauvegarde pour vous permettre de choisir précisément le dossier de destination.
+    *   Idéal pour ranger vos scripts `.bat` directement dans le dossier des photos qu'ils doivent traiter.
+
+> [!NOTE]
+> **Compatibilité :** Sur les navigateurs autres que Chrome (Firefox, Safari), la fenêtre "Enregistrer sous" s'ouvrira systématiquement par sécurité pour garantir le bon emplacement du fichier.
 
 ---
 
@@ -96,4 +111,4 @@ GeoPhoto Editor nécessite le moteur **ExifTool** pour les traitements de masse 
     *   *ExifTool* (de Phil Harvey) pour la génération de scripts systèmes BATCH (Modes 2 & 3).
 
 ---
-*Version 3.0.0 - 04 Mars 2026 - Développé par Yves Balestra.*
+*Version 3.1.0 - 03 Avril 2026 - Développé par Yves Balestra.*
