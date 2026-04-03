@@ -1,7 +1,7 @@
 [Setup]
 ; Informations de base de l'application
 AppName=GeoPhoto Editor
-AppVersion=3.0.0
+AppVersion=3.1.0
 AppPublisher=Yves Balestra
 
 ; Dossier d'installation par défaut (Program Files)
@@ -9,7 +9,7 @@ DefaultDirName={autopf}\GeoPhoto Editor
 DefaultGroupName=GeoPhoto Editor
 
 ; Nom du fichier d'installation généré (.exe)
-OutputBaseFilename=Installer_GeoPhoto_Editor_V3.0.0
+OutputBaseFilename=Installer_GeoPhoto_Editor_V3.1.0
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern

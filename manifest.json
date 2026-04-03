@@ -3,6 +3,7 @@
   "name": "GeoPhoto Editor",
   "short_name": "GeoPhoto",
   "description": "Éditeur de géolocalisation et date pour photos",
+  "version": "3.1.0",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f172a",
